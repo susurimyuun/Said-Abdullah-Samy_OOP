@@ -1,5 +1,7 @@
 package com.said.frontend;
 
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
 import java.awt.*;
 
 public class GameObject {
@@ -44,7 +46,7 @@ public class GameObject {
     public void setSpeed(float speed){
         if (speed >= 0) this.speed = speed;
     }
-    public float getColor(){
+    public Color getColor(){
         return this.color;
     }
     public void setColor(Color color) {
@@ -55,6 +57,6 @@ public class GameObject {
     void update(float delta){}
     /*Its intentionally empty because we want to then override them in other classes*/
 
-    void render(ShapreRenderer shapeRenderer){}
+    void render(ShapeRenderer shapeRenderer){}
 }
 

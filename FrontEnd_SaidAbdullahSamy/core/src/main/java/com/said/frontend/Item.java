@@ -18,7 +18,7 @@ public class Item extends GameObject{
         super(x,y,width,height,speed,Color.WHITE);
         this.scoreValue = scoreValue;
     }
-    @Override void update(float delta){
+    @Override public void update(float delta){
         this.y -= speed * delta;
     }
     /* Because we want to use the update function with different purposes*/
