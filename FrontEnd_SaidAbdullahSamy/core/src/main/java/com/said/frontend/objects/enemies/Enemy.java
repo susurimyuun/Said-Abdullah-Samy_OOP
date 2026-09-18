@@ -1,6 +1,8 @@
-package com.said.frontend;
+package com.said.frontend.objects.enemies;
 
-import java.awt.*;
+import com.badlogic.gdx.graphics.Color;
+import com.said.frontend.objects.GameObject;
+import com.said.frontend.objects.Player;
 
 public class Enemy extends GameObject {
     protected String name;
@@ -16,7 +18,7 @@ public class Enemy extends GameObject {
         this.scoreValue = 100;
     }
     public Enemy(float x, float y, float width, float height, Color color, String name, int hp, long scoreValue){
-        super(x,y,width,height,0,Color.PINK);
+        super(x,y,width,height,0,color);
         this.name = name;
         this.hp = hp;
         this.maxHp = hp;

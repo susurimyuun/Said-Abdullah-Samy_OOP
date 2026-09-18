@@ -1,10 +1,10 @@
-package com.said.frontend;
+package com.said.frontend.objects;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 
-import java.awt.*;
-
-public class GameObject {
+public abstract class GameObject implements Collidable{
     protected float x,y,width,height,speed;
     protected Color color;
 
@@ -57,6 +57,24 @@ public class GameObject {
     void update(float delta){}
     /*Its intentionally empty because we want to then override them in other classes*/
 
-    void render(ShapeRenderer shapeRenderer){}
+    public void render(ShapeRenderer shapeRenderer){
+        shapeRenderer.setColor(this.color);
+        shapeRenderer.rect(this.x, this.y, this.width, this.height);
+    }
+
+    @Override
+    public Rectangle getCoreHitbox(){
+        return new Rectangle(x,y,width,height);
+    }
+
+    @Override
+    public Rectangle getGrazeHitbox() {
+        // TODO: return a Rectangle with +10px padding on every side
+        return new Rectangle(x-10,y-10,width+20,height+20);
+    }
+    @Override
+    public void onCollision(Collidable other) {
+        // Base collision handler (can be overridden by subclasses that need to react)
+    }
 }
 
