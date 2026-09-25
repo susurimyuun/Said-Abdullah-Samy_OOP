@@ -71,11 +71,8 @@ public class Main extends ApplicationAdapter {
         // Clue: Gdx.input.isKeyJustPressed()
         if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
 
-            playerObject.shootBullet();
-            entities.add(playerObject.getX(),
-                playerObject.getY(),
-                BulletType.AMULET,
-                playerObject.getPower());
+            entities.add(playerObject.shootBullet());
+
         }
         updateAndClean(entities,delta,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         // TODO 2: Call updateAndClean(entities, delta, Gdx.graphics.getWidth(), Gdx.graphics.getHeight())
