@@ -4,12 +4,17 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.said.frontend.objects.BulletType;
 import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.Player;
+import com.said.frontend.objects.bullets.Bullet;
 import com.said.frontend.objects.enemies.Boss;
 import com.said.frontend.objects.enemies.Fairy;
 import com.said.frontend.objects.items.Item;
 import com.said.frontend.objects.items.ItemType;
+
+import com.badlogic.gdx.Input;
+import java.util.Iterator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +66,20 @@ public class Main extends ApplicationAdapter {
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
 
+        // TODO 1: If the Z key was just pressed, add a new bullet from player.shootBullet()
+        // to the entities list.
+        // Clue: Gdx.input.isKeyJustPressed()
+        if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
+
+            playerObject.shootBullet();
+            entities.add(playerObject.getX(),
+                playerObject.getY(),
+                BulletType.AMULET,
+                playerObject.getPower());
+        }
+        updateAndClean(entities,delta,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
+        // TODO 2: Call updateAndClean(entities, delta, Gdx.graphics.getWidth(), Gdx.graphics.getHeight())
+        // to update and clean up destroyed/off-screen entities.
         // 1. Polymorphic Update Loop: Items move downward automatically via Item.update(delta)
         for (GameObject obj : entities) {
             obj.update(delta);
@@ -85,7 +104,9 @@ public class Main extends ApplicationAdapter {
         // 3. Polymorphic Render Loop: Draw hitboxes with ShapeRenderer
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (GameObject obj : entities) {
-            obj.render(shapeRenderer);
+            if (!obj.isDestroyed()){
+                obj.render(shapeRenderer);
+            }
         }
         shapeRenderer.end();
     }
@@ -96,4 +117,26 @@ public class Main extends ApplicationAdapter {
             shapeRenderer.dispose();
         }
     }
+
+    public <T extends GameObject> void updateAndClean(List<T> list, float delta, float screenWidth, float screenHeight) {
+        // 1. Get an Iterator<T> from the given list.
+        Iterator<T> lists = list.iterator();
+        while (lists.hasNext()){
+            T object = lists.next();
+            object.update(delta);
+            if (object.isOffScreen(screenWidth,screenHeight) || object.isDestroyed()){
+                System.out.println("Removed via Generic Iterator " + object.getClass().getSimpleName());
+                lists.remove();
+            }
+        }
+        // 2. While there are still elements available (hasNext()):
+        //    a. Get the current element using next() and store it in a variable of type T.
+        //    b. Call update(delta) on the element.
+        //    c. If the element is off-screen (isOffScreen(screenWidth, screenHeight))
+        //       OR isDestroyed():
+        //       - Display the message: "Removed via Generic Iterator: " + [entity class name, using getClass().getSimpleName()]
+        //       - Remove the element from the list using the Iterator's method
+        //         (NOT list.remove()!).
+    }
+
 }

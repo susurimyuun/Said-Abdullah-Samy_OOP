@@ -3,6 +3,7 @@ package com.said.frontend.objects;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.said.frontend.objects.bullets.Bullet;
 import com.said.frontend.objects.items.Item;
 import com.said.frontend.objects.enemies.Enemy;
 import com.said.frontend.objects.GameObject;
@@ -87,6 +88,17 @@ public class Player extends GameObject {
         }
     }
 
+    //PreCS M4
+    public Bullet shootBullet() {
+        int damage = 10 + power;
+        System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
+        // TODO: return a new Bullet positioned at the top-center of the Player
+        // (x + width/2 - 4, y + height), with BulletType.AMULET as its type,
+        // and the damage calculated above
+        return new Bullet(x+width/2-4,y+height,BulletType.AMULET,damage);
+    }
+
+
     public void addScore(long points) {
         // TODO: Add the value to the player's score if points is greater than 0.
         if (points > 0) {
@@ -100,6 +112,7 @@ public class Player extends GameObject {
             addScore(item.getScoreValue());
         }
         ItemType type = item.getItemTypeEnum();
+        if (item.isDestroyed()) return;
         if (type != null) {
             switch (type) {
                 case POWER -> {
@@ -135,10 +148,15 @@ public class Player extends GameObject {
                     System.out.println(getName() + "Collected LIFE Item! HP : " + hp);
                 }
             }
-        } else {
+            item.destroy();
+
+        }
+        else {
             addScore(item.getScoreValue());
             System.out.println(name + " collected " + item.getItemType() + "!");
         }
+
+
     }
 
     @Override

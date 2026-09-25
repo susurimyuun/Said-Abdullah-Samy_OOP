@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Rectangle;
 public abstract class GameObject implements Collidable{
     protected float x,y,width,height,speed;
     protected Color color;
+    protected boolean active = true;
 
     public GameObject(float x, float y, float width, float height, float speed, Color color){
         this.x = x;
@@ -58,8 +59,34 @@ public abstract class GameObject implements Collidable{
     /*Its intentionally empty because we want to then override them in other classes*/
 
     public void render(ShapeRenderer shapeRenderer){
-        shapeRenderer.setColor(this.color);
-        shapeRenderer.rect(this.x, this.y, this.width, this.height);
+        if (shapeRenderer != null && color != null && active) {
+            shapeRenderer.setColor(color);
+            shapeRenderer.rect(x, y, width, height);
+        }
+    }
+    //PreCS M4
+    public boolean isDestroyed() {
+        // TODO: return true if the object is NOT active (active == false)
+        if (!active){
+            return true;
+        }
+        return false;
+    }
+
+    public void destroy() {
+        // TODO: mark this object as inactive
+        active = false;
+    }
+
+    public boolean isOffScreen(float screenWidth, float screenHeight) {
+        // TODO: return true if the x or y position is outside the screen boundaries
+        if (x-50 > screenWidth || x < -50 || y-50 > screenHeight || y < -50){
+            return true;
+        }
+        return false;
+        // Use a 50px tolerance margin on each side, so objects that have only
+        // slightly passed the edge of the screen are not immediately considered gone.
+
     }
 
     @Override

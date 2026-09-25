@@ -1,6 +1,7 @@
 package com.said.frontend;
 
 import com.said.frontend.objects.Player;
+import com.said.frontend.objects.bullets.Bullet;
 import com.said.frontend.objects.enemies.Boss;
 import com.said.frontend.objects.enemies.Enemy;
 import com.said.frontend.objects.enemies.Fairy;
@@ -62,6 +63,12 @@ public class Test {
         System.out.println("Final Score: " + reimu2.getScore() + " pts");
 
         System.out.println("\n=== Module 2 Test Completed Successfully ===");
+
+        Bullet bullet = reimu.shootBullet();
+        System.out.println("Bullet created at: (" + bullet.getX() + ", " + bullet.getY() + ") | Damage: " + bullet.getDamage());
+        bullet.update(0.1f);
+        System.out.println("Bullet Y after 0.1s: " + bullet.getY());
+        System.out.println("Is bullet off screen? " + bullet.isOffScreen(640, 480));
 
 
     }
