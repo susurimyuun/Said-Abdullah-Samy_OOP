@@ -101,11 +101,11 @@ public class Player extends GameObject {
         int damage = 10 + power;
         System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
         // TODO: Return a Bullet using EntityFactory
+        return EntityFactory.createPlayerBullet(x+width/2-4,y+height,damage);
         // with the same x and y formulas as in the previous implementation.
         // TODO: return a new Bullet positioned at the top-center of the Player
         // (x + width/2 - 4, y + height), with BulletType.AMULET as its type,
         // and the damage calculated above
-        return new Bullet(x+width/2-4,y+height, BulletType.AMULET,damage);
     }
 
 
@@ -184,7 +184,7 @@ public class Player extends GameObject {
                 x -= speed * delta;
                 // TODO 3: Adjust dx to match the direction.
                 // (If you move left, what should happen to dx?)
-                dx = x;
+                dx = -x;
             }
             if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
                 x += speed * delta;
@@ -208,7 +208,6 @@ public class Player extends GameObject {
             // 4. If anim is not null, assign it using setAnimation(...).
             if (currentDir != -1){
                 this.currentDir = -1;
-                assets.getAnimation("player_left");
                 Animation<TextureRegion> anim = assets.getAnimation("player_left");
                 if (anim != null){
                     setAnimation(anim);

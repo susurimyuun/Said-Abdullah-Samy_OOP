@@ -153,25 +153,25 @@ public class AssetManager {
         // Tip 2: Among the .png files registered below, which sprite sheets contain *animation* frames, and which contain *static images*? What does this mean for how you use them?
 
         // TODO: Register Reimu Hakurei's idle animation (player.png: 32x48 per cell)
-        registerAnimationFromSheet("player_idle","player",32,48,0,0,8,0.125f,Animation.PlayMode.LOOP);
-        registerAnimationFromSheet("player_left","player",32,48,1,0,4,0.12f,Animation.PlayMode.LOOP);
-        registerAnimationFromSheet("player_right","player",32,48,2,0,4,0.12f,Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("player_idle","player.png",32,48,0,0,8,0.125f,Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("player_left","player.png",32,48,1,0,4,0.12f,Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("player_right","player.png",32,48,2,0,4,0.12f,Animation.PlayMode.LOOP);
         // TODO: Register the Boss's idle animation (rumia.png: 64x64 per cell)
-        registerAnimationFromSheet("Boss_idle","rumia",64,64,0,0,4,0.2f,Animation.PlayMode.LOOP);
-        registerAnimationFromSheet("Boss_left","rumia",64,64,1,0,4,0.15f,Animation.PlayMode.REVERSED);
-        registerAnimationFromSheet("Boss_right","rumia",64,64,2,0,4,0.15f,Animation.PlayMode.NORMAL);
+        registerAnimationFromSheet("Boss_idle","rumia.png",64,64,0,0,4,0.2f,Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("Boss_left","rumia.png",64,64,1,0,4,0.15f,Animation.PlayMode.REVERSED);
+        registerAnimationFromSheet("Boss_right","rumia.png",64,64,2,0,4,0.15f,Animation.PlayMode.NORMAL);
         // TODO: Register the Fairy animations
-        registerAnimationFromSheet("fairy_idle_red","fairy",32,32,1,0,8,0.125f,Animation.PlayMode.LOOP);
-        registerAnimationFromSheet("fairy_idle_blue","fairy",32,32,0,0,8,0.125f,Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("fairy_idle_red","fairy.png",32,32,1,0,8,0.125f,Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("fairy_idle_blue","fairy.png",32,32,0,0,8,0.125f,Animation.PlayMode.LOOP);
         // TODO: Register the enemy bullet (bullets_small.png: 16x16 cell at row 2, column 3)
-        registerAnimationFromSheet("bullet_amulet","amulet_reimu",16,16,0,0,4,0.12f,Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("bullet_amulet","amulet_reimu.png",16,16,0,0,4,0.12f,Animation.PlayMode.LOOP);
         // TODO: Register the 4 Item variants (items.png: 16x16 per cell)
-        registerRegionFromSheet("item_power","items",16,16,0,0);
-        registerRegionFromSheet("item_point","items",16,16,0,1);
-        registerRegionFromSheet("item_bomb","items",16,16,0,3);
-        registerRegionFromSheet("item_life","items",16,16,0,5);
-        registerRegionFromSheet("bullet_amulet","amulet_reimu",16,16,0,0);
-        registerRegionFromSheet("bullet_amulet_homing","amulet_reimu",16,16,1,0);
+        registerRegionFromSheet("item_power","items.png",16,16,0,0);
+        registerRegionFromSheet("item_point","items.png",16,16,0,1);
+        registerRegionFromSheet("item_bomb","items.png",16,16,0,3);
+        registerRegionFromSheet("item_life","items.png",16,16,0,5);
+        registerRegionFromSheet("bullet_amulet","amulet_reimu.png",16,16,0,0);
+        registerRegionFromSheet("bullet_amulet_homing","amulet_reimu.png",16,16,1,0);
     }
 
     public void dispose() {

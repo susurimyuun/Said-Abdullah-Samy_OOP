@@ -83,6 +83,7 @@ public class EntityFactory {
     public static Bullet createPlayerBullet(float x, float y, int damage) {
         // TODO 5:
         // Return the result of calling the previous createPlayerBullet overload with "bullet_amulet" as spriteKey.
+        return createPlayerBullet(x,y,damage,"bullet_amulet");
     }
 
 

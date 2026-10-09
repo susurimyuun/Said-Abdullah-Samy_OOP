@@ -34,7 +34,7 @@ public class Main extends ApplicationAdapter {
     private Item pointItem;
     private List<GameObject> entities;
     private List<Fairy> fairyList;
-    SpriteBatch batch = new SpriteBatch();
+    private SpriteBatch batch;
 
 
     @Override
@@ -42,6 +42,7 @@ public class Main extends ApplicationAdapter {
         shapeRenderer = new ShapeRenderer();
         entities = new ArrayList<>();
         fairyList = new ArrayList<>();
+        batch = new SpriteBatch();
 
         // TODO 1:
         // When initializing the renderer, create a SpriteBatch and store it in batch.
@@ -120,13 +121,13 @@ public class Main extends ApplicationAdapter {
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
         // 3. Polymorphic Render Loop: Draw hitboxes with ShapeRenderer
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        /*shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (GameObject obj : entities) {
             if (!obj.isDestroyed()){
                 obj.render(shapeRenderer);
             }
         }
-        shapeRenderer.end();
+        shapeRenderer.end();*/
 
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
