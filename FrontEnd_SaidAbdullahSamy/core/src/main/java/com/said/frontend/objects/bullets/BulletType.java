@@ -1,4 +1,4 @@
-package com.said.frontend.objects;
+package com.said.frontend.objects.bullets;
 
 public enum BulletType {
     DANMAKU,

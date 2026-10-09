@@ -2,18 +2,21 @@ package com.said.frontend;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.said.frontend.objects.BulletType;
 import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.Player;
-import com.said.frontend.objects.bullets.Bullet;
 import com.said.frontend.objects.enemies.Boss;
 import com.said.frontend.objects.enemies.Fairy;
 import com.said.frontend.objects.items.Item;
 import com.said.frontend.objects.items.ItemType;
 
 import com.badlogic.gdx.Input;
+import com.said.frontend.objects.systems.AssetManager;
+import com.said.frontend.objects.systems.EntityFactory;
+
+import javax.lang.model.element.ElementVisitor;
 import java.util.Iterator;
 
 import java.util.ArrayList;
@@ -30,36 +33,54 @@ public class Main extends ApplicationAdapter {
     private Item powerItem;
     private Item pointItem;
     private List<GameObject> entities;
+    private List<Fairy> fairyList;
+    SpriteBatch batch = new SpriteBatch();
 
 
     @Override
     public void create() {
         shapeRenderer = new ShapeRenderer();
         entities = new ArrayList<>();
+        fairyList = new ArrayList<>();
 
-        // TODO 2: Instantiate Player (Red square) at (280, 40)
-        playerObject = new Player(280,40,"Reimu Hakurei",100,15,3);
+        // TODO 1:
+        // When initializing the renderer, create a SpriteBatch and store it in batch.
+        // LibGDX hint: new SpriteBatch().
+        // TODO 2:
+        // Initialize the fairy and entities lists as empty ArrayLists.
+
+        // TODO 3:
+        // Before creating entities, get the AssetManager instance and call init().
+        AssetManager.getInstance().init();
+        // TODO 4:
+        // Update how all entities are created! Follow the table and create Player, Fairy, Boss, and Item
+        // using the appropriate EntityFactory methods.
+        // Add both Fairies to the fairy list using add(...).
+        playerObject = EntityFactory.createPlayer(280,40,"Reimu Hakurei",100,15,3);
 
         // TODO 3: Instantiate Fairy (Pink square) at (150, 380)
-        fairyObject = new Fairy(150,380,"Fairy1",20);
+        // fairyObject = new Fairy(150,380,"Red Fairy",20);
 
         // TODO 4: Instantiate Boss (Blue square) at (380, 400)
-        bossObject = new Boss(380,400,"Boss1",150);
-
+        bossObject = EntityFactory.createBoss(380,400,"Boss1",150);
         // TODO 5: Instantiate Items (White squares) with downward speeds
-        itemsObject = new Item(150,450,"Item1");
+        itemsObject = EntityFactory.createItem(150,450,ItemType.POWER);
 
-        powerItem = new Item(200, 450, 16, 16, 80f, ItemType.POWER, 500L);
-        pointItem = new Item(320, 480, 12, 12, 120f, ItemType.POINT, 1000L);
+        powerItem = EntityFactory.createItem(200, 450, ItemType.POWER);
+        pointItem = EntityFactory.createItem(320, 480,  ItemType.POINT);
 
-        // TODO 6: Add all entities into the gameObjects list polymorphically
+        fairyList.add(EntityFactory.createFairy(150,380,"Read Fairy",20));
+        fairyList.add(EntityFactory.createFairy(250,380,"Blue Fairy",20,"fairy_idle_blue"));
+
+
+        // TODO 5:
+        // Add all the objects you have just created to entities.
         entities.add(playerObject);
-        entities.add(fairyObject);
+        entities.addAll(fairyList);
         entities.add(bossObject);
         entities.add(itemsObject);
         entities.add(powerItem);
         entities.add(pointItem);
-
     }
 
     @Override
@@ -106,13 +127,25 @@ public class Main extends ApplicationAdapter {
             }
         }
         shapeRenderer.end();
+
+        ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
+
+        batch.begin();
+        for (GameObject entity : entities) {
+            if (!entity.isDestroyed()) {
+                // TODO: Call each entity's .render() method with the SpriteBatch as its argument.
+                entity.render(batch);
+            }
+        }
+        batch.end();
     }
 
     @Override
     public void dispose() {
-        if (shapeRenderer != null) {
-            shapeRenderer.dispose();
+        if (batch != null) {
+            batch.dispose();
         }
+        AssetManager.getInstance().dispose();
     }
 
     public <T extends GameObject> void updateAndClean(List<T> list, float delta, float screenWidth, float screenHeight) {
@@ -135,5 +168,6 @@ public class Main extends ApplicationAdapter {
         //       - Remove the element from the list using the Iterator's method
         //         (NOT list.remove()!).
     }
+
 
 }

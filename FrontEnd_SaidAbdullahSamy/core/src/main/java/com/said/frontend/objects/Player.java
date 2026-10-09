@@ -3,11 +3,18 @@ package com.said.frontend.objects;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.said.frontend.objects.bullets.Bullet;
+import com.said.frontend.objects.bullets.BulletType;
 import com.said.frontend.objects.items.Item;
 import com.said.frontend.objects.enemies.Enemy;
-import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.items.ItemType;
+import com.said.frontend.objects.systems.AssetManager;
+import com.said.frontend.objects.systems.EntityFactory;
+
+import java.time.temporal.Temporal;
 
 public class Player extends GameObject {
     private String name;
@@ -15,9 +22,10 @@ public class Player extends GameObject {
     private int power;
     private int spellCards;
     private long score;
+    private int currentDir;
 
     public Player(String name, int hp, int power, int spellCards){
-        super(280,40,32,32,200f, Color.RED);
+        super(280,40,32,48,200f, Color.RED);
         this.name = name;
         this.hp = hp;
         this.power = power;
@@ -54,7 +62,7 @@ public class Player extends GameObject {
     }
 
     public Player(float x, float y, String name, int hp, int power, int spellCards){
-        super(x,y,32,32,200f, Color.RED);
+        super(x,y,32,48,200f, Color.RED);
         this.name = name;
         this.hp = hp;
         this.power = power;
@@ -92,10 +100,12 @@ public class Player extends GameObject {
     public Bullet shootBullet() {
         int damage = 10 + power;
         System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
+        // TODO: Return a Bullet using EntityFactory
+        // with the same x and y formulas as in the previous implementation.
         // TODO: return a new Bullet positioned at the top-center of the Player
         // (x + width/2 - 4, y + height), with BulletType.AMULET as its type,
         // and the damage calculated above
-        return new Bullet(x+width/2-4,y+height,BulletType.AMULET,damage);
+        return new Bullet(x+width/2-4,y+height, BulletType.AMULET,damage);
     }
 
 
@@ -161,23 +171,81 @@ public class Player extends GameObject {
 
     @Override
     public void update(float delta) {
+        super.update(delta);
+        float dx = 0f;
         if (Gdx.input != null) {
-            // TODO: Check W / UP input   → y += speed * delta
-            if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP) ){
+            if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
                 y += speed * delta;
             }
-            else if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
                 y -= speed * delta;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                x -= speed * delta;
+                // TODO 3: Adjust dx to match the direction.
+                // (If you move left, what should happen to dx?)
+                dx = x;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                x += speed * delta;
+                // TODO 4: Adjust dx to match the direction.
+                // (If you move right, what should happen to dx?)
+                dx = x;
+            }
+        }
+        updateAnimationState(dx);
+
+    }
+
+    public void updateAnimationState(float dx) {
+        AssetManager assets = AssetManager.getInstance();
+        if (dx < 0) {
+            // TODO:
+            // 1. Only make the following changes if currentDir is not -1.
+            // 2. Set currentDir to -1.
+            // 3. Retrieve the "player_left" animation using assets.getAnimation(...).
+            //    Store it in a local variable of type Animation<TextureRegion> named anim.
+            // 4. If anim is not null, assign it using setAnimation(...).
+            if (currentDir != -1){
+                this.currentDir = -1;
+                assets.getAnimation("player_left");
+                Animation<TextureRegion> anim = assets.getAnimation("player_left");
+                if (anim != null){
+                    setAnimation(anim);
+                }
 
             }
-            else if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-                x -= speed * delta;
+        } else if (dx > 0) {
+            // TODO:
+            // 1. Only make the following changes if currentDir is not 1.
+            // 2. Set currentDir to 1.
+            // 3. Retrieve the "player_right" animation using assets.getAnimation(...).
+            //    Store it in a local variable of type Animation<TextureRegion> named anim.
+            // 4. If anim is not null, assign it using setAnimation(...).
+            if (currentDir != 1){
+                this.currentDir = 1;
+                Animation<TextureRegion> anim = assets.getAnimation("player_right");
+                if (anim != null){
+                    setAnimation(anim);
+                }
             }
-            else if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-                x += speed * delta;
+        } else {
+            // TODO:
+            // 1. Only make the following changes if currentDir is not 0.
+            // 2. Set currentDir to 0.
+            // 3. Retrieve the "player_idle" animation using assets.getAnimation(...).
+            //    Store it in a local variable of type Animation<TextureRegion> named anim.
+            // 4. If anim is not null, assign it using setAnimation(...).
+            if ( currentDir != 0){
+                this.currentDir = 0;
+                Animation<TextureRegion>anim = assets.getAnimation("player_idle");
+                if (anim != null){
+                    setAnimation(anim);
+                }
             }
         }
     }
+
     @Override
     public void onCollision(Collidable other) {
         // TODO: Check whether the other received by this method is an Item

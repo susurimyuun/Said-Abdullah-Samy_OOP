@@ -1,7 +1,6 @@
 package com.said.frontend.objects.bullets;
 
 import com.badlogic.gdx.graphics.Color;
-import com.said.frontend.objects.BulletType;
 import com.said.frontend.objects.Collidable;
 import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.enemies.Enemy;
