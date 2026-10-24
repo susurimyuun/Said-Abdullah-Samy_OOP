@@ -1,6 +1,8 @@
 package com.said.frontend.objects.systems;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -15,6 +17,10 @@ public class AssetManager {
     private Map<String, TextureRegion> textureRegionMap;
     private Map<String, Animation<TextureRegion>> animationMap;
     private Map<String, Texture> textureMap;
+    private Map<String, Music> backgroundMusic;
+    private Map<String, Sound> soundEffects;
+
+
 
     // Find out: why is the AssetManager constructor *private*?
     private AssetManager() {
@@ -22,6 +28,8 @@ public class AssetManager {
         this.textureRegionMap = new HashMap<>();
         this.animationMap = new HashMap<>();
         this.textureMap = new HashMap<>();
+        this.backgroundMusic = new HashMap<>();
+        this.soundEffects = new HashMap<>();
     }
 
     // Global access point for the single instance
@@ -148,6 +156,47 @@ public class AssetManager {
         return animationMap.get(key);
     }
 
+    public Sound loadsound(String key, String filename){
+        if(soundEffects.containsKey(key)){
+            return soundEffects.get(key);
+        } else {
+            if (Gdx.files != null && Gdx.audio != null && Gdx.files.internal(filename).exists()) {
+                Sound sound = Gdx.audio.newSound(Gdx.files.internal(filename));
+                soundEffects.put(key, sound);
+                return sound;
+            }
+            return null;
+        }
+
+    }
+
+    public Music loadmusic(String key, String filename){
+        if(backgroundMusic.containsKey(key)){
+            return backgroundMusic.get(key);
+        } else {
+            if (Gdx.files != null && Gdx.audio != null && Gdx.files.internal(filename).exists()) {
+                Music music = Gdx.audio.newMusic(Gdx.files.internal(filename));
+                backgroundMusic.put(key, music);
+                return music;
+            }
+            return null;
+        }
+
+    }
+    public void playBGM(String key){
+        Music music = backgroundMusic.get(key);
+        if (music != null && !music.isPlaying()){
+            music.setLooping(true);
+            music.play();
+        }
+    }
+    public void playSFX(String key){
+        Sound sound = soundEffects.get(key);
+        if(sound != null){
+            sound.play();
+        }
+    }
+
     public void init() {
         // Tip 1: Explore values for row, startCol, numFrames, frameDuration, and Animation.PlayMode that look good to you.
         // Tip 2: Among the .png files registered below, which sprite sheets contain *animation* frames, and which contain *static images*? What does this mean for how you use them?
@@ -172,6 +221,14 @@ public class AssetManager {
         registerRegionFromSheet("item_life","items.png",16,16,0,5);
         registerRegionFromSheet("bullet_amulet","amulet_reimu.png",16,16,0,0);
         registerRegionFromSheet("bullet_amulet_homing","amulet_reimu.png",16,16,1,0);
+
+        loadmusic("bgm_lalaland","testing_miasebastian.mp3");
+        loadmusic("bgm_touhou","testing_touhou.mp3");
+
+        loadsound("enemy_die","sdf_enemyDied.wav");
+        loadsound("shoot","Shoot.wav");
+        loadsound("power_up","powerUp.wav");
+        loadsound("point_up","pointUp.wav");
     }
 
     public void dispose() {
@@ -183,6 +240,14 @@ public class AssetManager {
         textureRegionMap.clear();
         animationMap.clear();
 
+        for(Music music:backgroundMusic.values()){
+            music.dispose();
+        }
+        backgroundMusic.clear();
+        for(Sound sound: soundEffects.values()){
+            sound.dispose();
+        }
+        soundEffects.clear();
     }
 
 }

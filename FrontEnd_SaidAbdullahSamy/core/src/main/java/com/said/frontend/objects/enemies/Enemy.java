@@ -3,6 +3,7 @@ package com.said.frontend.objects.enemies;
 import com.badlogic.gdx.graphics.Color;
 import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.Player;
+import com.said.frontend.objects.systems.AssetManager;
 
 public class Enemy extends GameObject {
     protected String name;
@@ -60,6 +61,7 @@ public class Enemy extends GameObject {
         }
         System.out.println(name + " took " + damage + " damage! HP: " + this.hp + "/" + this.maxHp);
         if (wasAlive && this.hp == 0) {
+            AssetManager.getInstance().playSFX("enemy_die");
             System.out.println(name + " was defeated!");
             // TODO: mark this enemy as destroyed
             destroy();

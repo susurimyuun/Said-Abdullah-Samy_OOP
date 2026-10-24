@@ -37,6 +37,7 @@ public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
 
 
+
     @Override
     public void create() {
         shapeRenderer = new ShapeRenderer();
@@ -53,6 +54,8 @@ public class Main extends ApplicationAdapter {
         // TODO 3:
         // Before creating entities, get the AssetManager instance and call init().
         AssetManager.getInstance().init();
+        //Playin MUSIICCCCCCC
+        AssetManager.getInstance().playBGM("bgm_lalaland");
         // TODO 4:
         // Update how all entities are created! Follow the table and create Player, Fairy, Boss, and Item
         // using the appropriate EntityFactory methods.

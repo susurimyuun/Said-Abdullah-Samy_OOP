@@ -98,6 +98,7 @@ public class Player extends GameObject {
 
     //PreCS M4
     public Bullet shootBullet() {
+        AssetManager.getInstance().playSFX("shoot");
         int damage = 10 + power;
         System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
         // TODO: Return a Bullet using EntityFactory
@@ -126,6 +127,7 @@ public class Player extends GameObject {
         if (type != null) {
             switch (type) {
                 case POWER -> {
+                    AssetManager.getInstance().playSFX("power_up");
                     // 1. Increase power by type.getPowerBonus() via this.power
                     this.power += type.getPowerBonus();
                     // 2. Add score by item.getScoreValue() via addScore() (addScore() already automatically prints "gained X pts!")
@@ -136,6 +138,7 @@ public class Player extends GameObject {
 
                 }
                 case POINT -> {
+                    AssetManager.getInstance().playSFX("point_up");
                     // 1. Add score by item.getScoreValue() via addScore()
                     addScore(item.getScoreValue());
                     // 2. Print: [name] collected POINT item!
