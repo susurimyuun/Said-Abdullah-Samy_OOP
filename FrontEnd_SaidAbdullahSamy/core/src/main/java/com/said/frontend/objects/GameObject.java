@@ -61,8 +61,7 @@ public abstract class GameObject implements Collidable{
         this.color = color;
     }
 
-    public
-    void update(float delta){
+    public void update(float delta){
         // TODO: Increase the object's internal time so its animation advances
             this.stateTime+=delta;
     }
@@ -137,5 +136,7 @@ public abstract class GameObject implements Collidable{
     public void setAnimation(Animation<TextureRegion> animation){
         this.animation = animation;
     }
+
+
 }
 

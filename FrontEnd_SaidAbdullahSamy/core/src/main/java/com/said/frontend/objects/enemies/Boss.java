@@ -4,9 +4,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.said.frontend.objects.Collidable;
 import com.said.frontend.objects.Player;
 import com.said.frontend.objects.enemies.Enemy;
+import com.said.frontend.objects.patterns.ShootingPattern;
+import com.said.frontend.objects.patterns.shootingStrategy.SpreadShot;
+import com.said.frontend.objects.systems.BulletManager;
 
 
 public class Boss extends Enemy {
+    private ShootingPattern shootingPattern = new SpreadShot(200f,3,30f);
 
     public Boss(String name, int hp){
         super(380,400,64,64, Color.BLUE,name,hp,5000L);
@@ -21,6 +25,19 @@ public class Boss extends Enemy {
         this.name = name;
         this.hp = hp;
         this.maxHp = hp;
+    }
+
+    public void shootBullet(BulletManager bulletManager) {
+        if (shootingPattern != null && !isDestroyed()) {
+            shootingPattern.execute(x + width / 2f - 8f, y, bulletManager, false);
+        }
+    }
+    public ShootingPattern getShootingPattern() {
+        return shootingPattern;
+    }
+
+    public void setShootingPattern(ShootingPattern shootingPattern) {
+        this.shootingPattern = shootingPattern;
     }
 
     @Override

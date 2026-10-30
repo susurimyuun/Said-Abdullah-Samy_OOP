@@ -14,6 +14,8 @@ import com.said.frontend.objects.items.ItemType;
 
 import com.badlogic.gdx.Input;
 import com.said.frontend.objects.systems.AssetManager;
+import com.said.frontend.objects.systems.BulletManager;
+import com.said.frontend.objects.systems.CollisionReferee;
 import com.said.frontend.objects.systems.EntityFactory;
 
 import javax.lang.model.element.ElementVisitor;
@@ -35,6 +37,22 @@ public class Main extends ApplicationAdapter {
     private List<GameObject> entities;
     private List<Fairy> fairyList;
     private SpriteBatch batch;
+    // TODO: Create a private field to store BulletManager
+    // TODO: Create a private field to store CollisionReferee
+    private float enemyShootTimer = 0f;
+    private BulletManager bulletManager;
+    private CollisionReferee collisionReferee;
+    // ...
+
+    private void updateEnemyScheduler(float delta) {
+        enemyShootTimer += delta;
+        if (enemyShootTimer >= 1.5f) {
+            bossObject.shootBullet(bulletManager);
+            enemyShootTimer = 0f;
+        }
+    }
+
+// ...
 
 
 
@@ -44,6 +62,8 @@ public class Main extends ApplicationAdapter {
         entities = new ArrayList<>();
         fairyList = new ArrayList<>();
         batch = new SpriteBatch();
+        bulletManager = new BulletManager();
+        collisionReferee = new CollisionReferee();
 
         // TODO 1:
         // When initializing the renderer, create a SpriteBatch and store it in batch.
@@ -66,7 +86,7 @@ public class Main extends ApplicationAdapter {
         // fairyObject = new Fairy(150,380,"Red Fairy",20);
 
         // TODO 4: Instantiate Boss (Blue square) at (380, 400)
-        bossObject = EntityFactory.createBoss(380,400,"Boss1",150);
+        bossObject = EntityFactory.createBoss(380,400,"Rumia",150);
         // TODO 5: Instantiate Items (White squares) with downward speeds
         itemsObject = EntityFactory.createItem(150,450,ItemType.POWER);
 
@@ -95,30 +115,23 @@ public class Main extends ApplicationAdapter {
         // to the entities list.
         // Clue: Gdx.input.isKeyJustPressed()
         if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
-
-            entities.add(playerObject.shootBullet());
-
+            playerObject.shootBullet(bulletManager);
         }
-        updateAndClean(entities,delta,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-        // TODO 2: Call updateAndClean(entities, delta, Gdx.graphics.getWidth(), Gdx.graphics.getHeight())
-        // to update and clean up destroyed/off-screen entities.
-        // 1. Polymorphic Update Loop: Items move downward automatically via Item.update(delta)
-        for (GameObject obj : entities) {
-            obj.update(delta);
-        }
-        for (int i = 0; i < entities.size(); i++) {
-            for (int j = i + 1; j < entities.size(); j++) {
-                GameObject a = entities.get(i);
-                GameObject b = entities.get(j);
+        // TODO: Periodic firing scheduler for Boss Rumia
+        updateEnemyScheduler(delta);
 
-                // TODO: Check whether getCoreHitbox() of a and b overlap (use the .overlaps() method of Rectangle)
-                if(a.getCoreHitbox().overlaps(b.getCoreHitbox())){
-                    a.onCollision(b);
-                    b.onCollision(a);
-                }
-                // TODO: Call a.onCollision(b) and b.onCollision(a)
-            }
-        }
+        // TODO: Generic update & clean for standard entities (Player, Enemy, Item)
+        updateAndClean(entities, delta, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        // TODO: Update and recycle Object Pool
+        bulletManager.update(delta,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
+
+        // TODO: Evaluate & resolve all collisions via
+        // Mediator Pattern
+        collisionReferee.resolveCollisions(playerObject,entities,bulletManager);
+
+        // TODO: Clear screen
+        ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
         // 2. Clear Screen
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
@@ -141,6 +154,8 @@ public class Main extends ApplicationAdapter {
                 entity.render(batch);
             }
         }
+        // TODO: Render all active bullets from the pool
+        bulletManager.render(batch);
         batch.end();
     }
 
@@ -172,6 +187,7 @@ public class Main extends ApplicationAdapter {
         //       - Remove the element from the list using the Iterator's method
         //         (NOT list.remove()!).
     }
+
 
 
 }

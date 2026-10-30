@@ -6,12 +6,15 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.said.frontend.objects.bullets.Bullet;
 import com.said.frontend.objects.bullets.BulletType;
 import com.said.frontend.objects.items.Item;
 import com.said.frontend.objects.enemies.Enemy;
 import com.said.frontend.objects.items.ItemType;
+import com.said.frontend.objects.patterns.ShootingPattern;
 import com.said.frontend.objects.systems.AssetManager;
+import com.said.frontend.objects.systems.BulletManager;
 import com.said.frontend.objects.systems.EntityFactory;
 
 import java.time.temporal.Temporal;
@@ -23,6 +26,11 @@ public class Player extends GameObject {
     private int spellCards;
     private long score;
     private int currentDir;
+
+    // TODO: Declare a private field named shootingPattern of type ShootingPattern.
+    //       No need to initialize it right away.
+    private ShootingPattern shootingPattern;
+    // ...
 
     public Player(String name, int hp, int power, int spellCards){
         super(280,40,32,48,200f, Color.RED);
@@ -97,7 +105,7 @@ public class Player extends GameObject {
     }
 
     //PreCS M4
-    public Bullet shootBullet() {
+    /*public Bullet shootBullet() {
         AssetManager.getInstance().playSFX("shoot");
         int damage = 10 + power;
         System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
@@ -107,6 +115,29 @@ public class Player extends GameObject {
         // TODO: return a new Bullet positioned at the top-center of the Player
         // (x + width/2 - 4, y + height), with BulletType.AMULET as its type,
         // and the damage calculated above
+    }*/
+    // TODO: Update shootBullet() to shootBullet(BulletManager bulletManager)!
+    public void shootBullet(BulletManager bulletManager) {
+        // - If bulletManager is null, return immediately
+        // - If shootingPattern is not null, call execute() from the player's muzzle coordinates (x + width / 2f - 8f, y + height)
+        // - If shootingPattern is null, call bulletManager.spawnPlayerBullet() directly
+        if (bulletManager == null){
+            return;
+        }
+        if (shootingPattern != null){
+            shootingPattern.execute(x + width / 2f - 8f, y + height,bulletManager,true);
+        }else{
+            bulletManager.spawnPlayerBullet(x + width / 2f - 8f, y + height, 0f, 400f, 25);
+        }
+
+    }
+    // TODO: Provide a getter and setter for shootingPattern
+    public ShootingPattern getShootingPattern() {
+        return shootingPattern;
+    }
+
+    public void setShootingPattern(ShootingPattern shootingPattern) {
+        this.shootingPattern = shootingPattern;
     }
 
 
@@ -257,6 +288,17 @@ public class Player extends GameObject {
         }
         // TODO: Print "Player touches items" then call collectItem((Item) other)
     }
+
+    @Override
+    public Rectangle getCoreHitbox() {
+        return new Rectangle(x + (width / 2f) - 4f, y + (height / 2f) - 4f, 8f, 8f);
+    }
+
+    @Override
+    public Rectangle getGrazeHitbox() {
+        return new Rectangle(x, y, width, height);
+    }
+
 
 
 

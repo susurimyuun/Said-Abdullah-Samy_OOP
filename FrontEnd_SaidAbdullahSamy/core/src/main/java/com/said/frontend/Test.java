@@ -64,11 +64,7 @@ public class Test {
 
         System.out.println("\n=== Module 2 Test Completed Successfully ===");
 
-        Bullet bullet = reimu.shootBullet();
-        System.out.println("Bullet created at: (" + bullet.getX() + ", " + bullet.getY() + ") | Damage: " + bullet.getDamage());
-        bullet.update(0.1f);
-        System.out.println("Bullet Y after 0.1s: " + bullet.getY());
-        System.out.println("Is bullet off screen? " + bullet.isOffScreen(640, 480));
+//       creen? " + bullet.isOffScreen(640, 480));
 
 
     }
