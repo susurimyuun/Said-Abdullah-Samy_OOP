@@ -19,29 +19,29 @@ public class Bullet extends GameObject {
     private boolean isPlayerBullet, grazed;
 
     public Bullet(float x, float y, BulletType bulletType, int damage) {
-        super(x, y, 8, 16, 400f, Color.YELLOW);
+        super(x, y, 16, 16, 400f, Color.YELLOW);
         // TODO: initialize bulletType and damage from the parameters
         this.bulletType = bulletType;
         this.damage = damage;
         this.vx = 0;
         this.vy = 400f;
-        this.angle = 0f;
+        setAngle(90f);
         this.isPlayerBullet = true;
         this.grazed = false;
     }
 
     public Bullet(float x, float y, float speed, BulletType bulletType, int damage) {
-        super(x, y, 8, 16, speed, Color.YELLOW);
+        super(x, y, 16, 16, speed, Color.YELLOW);
         // TODO: initialize bulletType and damage from the parameters
         this.bulletType = bulletType;
         this.damage = damage;
         this.vx = 0;
         this.vy = speed;
         if (speed < 0){
-            this.angle = 270f;
+            setAngle(270f);
         }
         else{
-            this.angle = 90f;
+            setAngle(90f);
         }
         this.isPlayerBullet = true;
         this.grazed = false;
@@ -51,7 +51,7 @@ public class Bullet extends GameObject {
     public void update(float delta) {
         // TODO: increase the y position by speed * delta (bullet moves upward)
         super.update(delta);
-        y += speed * delta;
+
         this.x += this.vx * delta;
         this.y += this.vy * delta;
     }
@@ -116,6 +116,7 @@ public class Bullet extends GameObject {
                 batch.draw(sprite, x, y, width / 2f, height / 2f, width, height, 1f, 1f, angle - 90f);
             } else {
                 super.render(batch);
+                System.out.println("Error");
             }
         }
     }

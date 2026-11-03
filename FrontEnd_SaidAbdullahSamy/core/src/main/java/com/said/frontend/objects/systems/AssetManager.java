@@ -219,8 +219,8 @@ public class AssetManager {
         registerRegionFromSheet("item_point","items.png",16,16,0,1);
         registerRegionFromSheet("item_bomb","items.png",16,16,0,3);
         registerRegionFromSheet("item_life","items.png",16,16,0,5);
-        registerRegionFromSheet("bullet_amulet","amulet_reimu.png",16,16,0,0);
-        registerRegionFromSheet("bullet_amulet_homing","amulet_reimu.png",16,16,1,0);
+        registerRegionFromSheet("bullet_danmaku","bullets_small.png",16,16,1,2);
+        registerRegionFromSheet("bullet_danmaku_homing","bullets_large.png",16,16,1,0);
 
         loadmusic("bgm_lalaland","testing_miasebastian.mp3");
         loadmusic("bgm_touhou","testing_touhou.mp3");

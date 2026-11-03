@@ -46,8 +46,9 @@ public class CollisionReferee {
                         if(enemy.isDestroyed()){
                             player.addScore(enemy.getScoreValue());
                             newDrops.add(EntityFactory.createItem(enemy.getX(), enemy.getY(), ItemType.POWER));
-                            bullet.destroy();
+
                         }
+                        bullet.destroy();
                     }
                 }
             }
@@ -74,7 +75,7 @@ public class CollisionReferee {
         //       - If YES:
         //         * Mark the bullet as grazed.
         //         * Give the graze score bonus to the player: player.addScore(50)
-        for(Bullet bullet : bulletManager.getActivePlayerBullets() ){
+        for(Bullet bullet : bulletManager.getActiveEnemyBullets() ){
             if(bullet.isDestroyed()) continue;
             if(!player.isDestroyed()) {
                 if (bullet.getCoreHitbox().overlaps(player.getCoreHitbox())) {

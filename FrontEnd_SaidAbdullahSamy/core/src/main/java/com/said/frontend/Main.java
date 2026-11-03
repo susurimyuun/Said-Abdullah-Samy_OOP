@@ -133,20 +133,6 @@ public class Main extends ApplicationAdapter {
         // TODO: Clear screen
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
-        // 2. Clear Screen
-        ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
-
-        // 3. Polymorphic Render Loop: Draw hitboxes with ShapeRenderer
-        /*shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        for (GameObject obj : entities) {
-            if (!obj.isDestroyed()){
-                obj.render(shapeRenderer);
-            }
-        }
-        shapeRenderer.end();*/
-
-        ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
-
         batch.begin();
         for (GameObject entity : entities) {
             if (!entity.isDestroyed()) {

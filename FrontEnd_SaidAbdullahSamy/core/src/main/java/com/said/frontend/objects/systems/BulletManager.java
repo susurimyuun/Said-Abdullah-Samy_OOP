@@ -112,7 +112,7 @@ public class BulletManager {
             object.update(delta);
             if (object.isOffScreen(screenWidth,screenHeight) || object.isDestroyed()){
                 System.out.println("Removed via Generic Iterator " + object.getClass().getSimpleName());
-                lists.remove();
+                listss.remove();
                 object.destroy();
                 enemyBulletPool.offer(object);
             }
