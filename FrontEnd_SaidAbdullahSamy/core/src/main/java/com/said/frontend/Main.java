@@ -5,6 +5,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.said.frontend.commands.Command;
+import com.said.frontend.commands.InputHandler;
 import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.Player;
 import com.said.frontend.objects.enemies.Boss;
@@ -17,6 +19,7 @@ import com.said.frontend.objects.systems.AssetManager;
 import com.said.frontend.objects.systems.BulletManager;
 import com.said.frontend.objects.systems.CollisionReferee;
 import com.said.frontend.objects.systems.EntityFactory;
+import com.said.frontend.ui.GameHUD;
 
 import javax.lang.model.element.ElementVisitor;
 import java.util.Iterator;
@@ -43,6 +46,9 @@ public class Main extends ApplicationAdapter {
     private BulletManager bulletManager;
     private CollisionReferee collisionReferee;
     // ...
+    // TODO: Declare private fields InputHandler inputHandler and GameHUD gameHUD
+    private InputHandler inputHandler;
+    private GameHUD gameHUD;
 
     private void updateEnemyScheduler(float delta) {
         enemyShootTimer += delta;
@@ -51,6 +57,33 @@ public class Main extends ApplicationAdapter {
             enemyShootTimer = 0f;
         }
     }
+    private void restartGame() {
+        System.out.println("[Main] Restarting game...");
+        entities.clear();
+        bulletManager.clearEnemyBullets();
+        bulletManager.clearPlayerBullets();
+        entities.add(playerObject);
+        playerObject.resetGame();
+
+        fairyList.clear();
+        fairyList.add(EntityFactory.createFairy(150, 380, "Red Fairy", 20));
+        fairyList.add(EntityFactory.createFairy(250, 380, "Blue Fairy", 20, "fairy_idle_blue"));
+        bossObject = EntityFactory.createBoss(250, 400, "Rumia", 150);
+        powerItem = EntityFactory.createItem(180, 450, ItemType.POWER);
+        pointItem = EntityFactory.createItem(220, 480, ItemType.POINT);
+        // TODO: Register gameHUD as an Observer on the player object!
+        // Hint: player.registerObserver(gameHUD);
+        playerObject.registerObserver(gameHUD);
+
+        entities.addAll(fairyList);
+        entities.add(bossObject);
+        entities.add(powerItem);
+        entities.add(pointItem);
+        // TODO: Register the entities list to inputHandler for bullet conversion during a Bomb!
+        // Hint: inputHandler.setEntities(entities);
+        inputHandler.setEntities(entities);
+    }
+
 
 // ...
 
@@ -64,7 +97,8 @@ public class Main extends ApplicationAdapter {
         batch = new SpriteBatch();
         bulletManager = new BulletManager();
         collisionReferee = new CollisionReferee();
-
+        inputHandler = new InputHandler();
+        gameHUD = new GameHUD();
         // TODO 1:
         // When initializing the renderer, create a SpriteBatch and store it in batch.
         // LibGDX hint: new SpriteBatch().
@@ -80,17 +114,17 @@ public class Main extends ApplicationAdapter {
         // Update how all entities are created! Follow the table and create Player, Fairy, Boss, and Item
         // using the appropriate EntityFactory methods.
         // Add both Fairies to the fairy list using add(...).
-        playerObject = EntityFactory.createPlayer(280,40,"Reimu Hakurei",100,15,3);
+        playerObject = EntityFactory.createPlayer(200,50,"Reimu Hakurei",100,15,3);
 
         // TODO 3: Instantiate Fairy (Pink square) at (150, 380)
         // fairyObject = new Fairy(150,380,"Red Fairy",20);
 
         // TODO 4: Instantiate Boss (Blue square) at (380, 400)
-        bossObject = EntityFactory.createBoss(380,400,"Rumia",150);
+        bossObject = EntityFactory.createBoss(250,400,"Rumia",150);
         // TODO 5: Instantiate Items (White squares) with downward speeds
-        itemsObject = EntityFactory.createItem(150,450,ItemType.POWER);
+        itemsObject = EntityFactory.createItem(180,450,ItemType.POWER);
 
-        powerItem = EntityFactory.createItem(200, 450, ItemType.POWER);
+        powerItem = EntityFactory.createItem(220, 450, ItemType.POWER);
         pointItem = EntityFactory.createItem(320, 480,  ItemType.POINT);
 
         fairyList.add(EntityFactory.createFairy(150,380,"Read Fairy",20));
@@ -110,13 +144,23 @@ public class Main extends ApplicationAdapter {
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
-
-        // TODO 1: If the Z key was just pressed, add a new bullet from player.shootBullet()
-        // to the entities list.
-        // Clue: Gdx.input.isKeyJustPressed()
-        if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
-            playerObject.shootBullet(bulletManager);
+        // 0. Restart Game on 'R' key when Game Over
+        // TODO: Check if Gdx.input != null AND the R key was just pressed (isKeyJustPressed(Input.Keys.R))
+        //       AND player.isGameOver() is true: call restartGame();
+        if(Gdx.input != null && Gdx.input.isKeyJustPressed(Input.Keys.R) && playerObject.isGameOver()){
+            restartGame();
         }
+
+        // 1. Process all player inputs through the Command Pattern (Invoker Command Stream)
+        // TODO:
+        // - Retrieve the command stream: List<Command> commands = inputHandler.handleInput(delta);
+        // - Loop through each command in commands and call: command.execute(player, bulletManager);
+        // (Remove any old manual Gdx.input checks in render() if still present!)
+        List<Command> commands = inputHandler.handleInput(delta);
+        for(Command comms : commands){
+            comms.execute(playerObject,bulletManager);
+        }
+
         // TODO: Periodic firing scheduler for Boss Rumia
         updateEnemyScheduler(delta);
 
@@ -142,7 +186,14 @@ public class Main extends ApplicationAdapter {
         }
         // TODO: Render all active bullets from the pool
         bulletManager.render(batch);
+        // TODO: Call gameHUD's render method with batch as parameter
+        gameHUD.render(batch);
         batch.end();
+        // 8. Render UI border frame lines & Focus Mode Core Hitbox indicator (Drawn ON TOP of sprites!)
+        // TODO: Call gameHUD.renderBackground()
+        // TODO: Call player.renderFocusIndicator(gameHUD.getShapeRenderer())
+        gameHUD.renderBackground();
+        playerObject.renderFocusIndicator(gameHUD.getShapeRenderer());
     }
 
     @Override

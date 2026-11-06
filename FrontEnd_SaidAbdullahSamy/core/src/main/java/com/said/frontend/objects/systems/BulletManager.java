@@ -1,10 +1,12 @@
 package com.said.frontend.objects.systems;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.bullets.Bullet;
 import com.said.frontend.objects.bullets.BulletType;
+import com.said.frontend.objects.items.Item;
+import com.said.frontend.objects.items.ItemType;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.*;
 
 public class BulletManager {
@@ -72,6 +74,7 @@ public class BulletManager {
         }
     }
 
+
     // Helper methods to access pools and active lists
     public List<Bullet> getActivePlayerBullets() { return activePlayerBullets; }
     public List<Bullet> getActiveEnemyBullets() { return activeEnemyBullets; }
@@ -116,6 +119,38 @@ public class BulletManager {
                 object.destroy();
                 enemyBulletPool.offer(object);
             }
+        }
+    }
+
+    // Spell Card (Bomb) Execution: Clear all active enemy bullets and convert them into POINT item drops!
+    public void clearEnemyBullets(List<GameObject> entities) {
+        Iterator<Bullet> it = activeEnemyBullets.iterator();
+        while (it.hasNext()) {
+            Bullet bullet = it.next();
+
+            if (entities != null) {
+                Item pointItem = EntityFactory.createItem(bullet.getX(), bullet.getY(), ItemType.POINT);
+                entities.add(pointItem);
+            }
+
+            bullet.destroy();
+            it.remove();
+            enemyBulletPool.offer(bullet);
+        }
+    }
+
+    public void clearEnemyBullets() {
+        clearEnemyBullets(null);
+    }
+
+    // Clear all player bullets when restarting the game (Copy-Paste):
+    public void clearPlayerBullets() {
+        Iterator<Bullet> pIter = activePlayerBullets.iterator();
+        while (pIter.hasNext()) {
+            Bullet bullet = pIter.next();
+            bullet.destroy();
+            pIter.remove();
+            playerBulletPool.offer(bullet);
         }
     }
 
