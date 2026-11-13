@@ -10,6 +10,12 @@ import com.said.frontend.objects.items.Item;
 import com.said.frontend.objects.enemies.Enemy;
 import com.said.frontend.objects.items.ItemType;
 import com.said.frontend.objects.patterns.ShootingPattern;
+import com.said.frontend.objects.patterns.bulletStrategy.HomingBulletMovement;
+import com.said.frontend.objects.patterns.entityStrategy.FixedMovement;
+import com.said.frontend.objects.patterns.shootingStrategy.CompositeShootingPattern;
+import com.said.frontend.objects.patterns.shootingStrategy.FrontShot;
+import com.said.frontend.objects.patterns.shootingStrategy.SideShot;
+import com.said.frontend.objects.patterns.shootingStrategy.SpreadShot;
 import com.said.frontend.objects.systems.AssetManager;
 import com.said.frontend.objects.systems.BulletManager;
 import com.said.frontend.observers.GameObserver;
@@ -17,7 +23,7 @@ import com.said.frontend.observers.GameObserver;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player extends GameObject {
+public class Player extends EntityShooter {
     private String name;
     private int hp;
     private int lives = 3;
@@ -31,15 +37,19 @@ public class Player extends GameObject {
     // 2. boolean focused with an initial value of false (indicates whether the player is holding Shift / Focus Mode)
     boolean focused = false;
     // 3. float shootTimer with an initial value of 0.1f (timer tracking the delay between shots)
-    float shootTimer = 0.1f;
     // 4. float shootCooldown with an initial value of 0.1f (0.1s cooldown threshold / 10 shots per second while holding Z)
-    float shootCooldown = 0.1f;
+    float shootCooldown = 5f/60f;
+    float shootTimer = shootCooldown;
     // 5. float invulnerableTimer with an initial value of 0f (timer tracking invulnerability duration after respawn / bomb)
     float invulnerableTimer = 0f;
+    private float homingCooldown = 30f / 60f; // 30 frames (0.5s) or 15 frames (0.25s)
+    private float homingShootTimer = homingCooldown;
 
     // TODO: Declare a private field named shootingPattern of type ShootingPattern.
     //       No need to initialize it right away.
     private ShootingPattern shootingPattern;
+    private ShootingPattern mainShootingPattern;
+    private ShootingPattern sideShootingPattern;
     // ...
     // TODO: Declare a private attribute List<GameObserver> observers and initialize it with an empty ArrayList
     private List<GameObserver> observers = new ArrayList<>();
@@ -112,7 +122,10 @@ public class Player extends GameObject {
     // 6. notifyGrazeChanged()      -> calls obs.onGrazeChanged(grazeCount)
 
     public Player(String name, int hp, int power, int spellCards){
-        super(280,40,32,48,200f, Color.RED);
+        super(280,40,32,48,240f, Color.RED);
+        setMovementPattern(new FixedMovement());
+        updatePowerStrategy();
+
         this.name = name;
         this.hp = hp;
         this.power = power;
@@ -145,6 +158,9 @@ public class Player extends GameObject {
         this.power = power;
         notifyLivesChanged();
         notifyHpChanged();
+
+        updatePowerStrategy();
+        notifyPowerChanged();
         notifyPowerChanged();
         notifySpellCardsChanged();
     }
@@ -164,7 +180,9 @@ public class Player extends GameObject {
     }
 
     public Player(float x, float y, String name, int hp, int power, int spellCards){
-        super(x,y,32,48,200f, Color.RED);
+        super(x,y,32,48,240f, Color.RED);
+        setMovementPattern(new FixedMovement());
+        updatePowerStrategy();
         this.name = name;
         this.hp = hp;
         this.power = power;
@@ -195,26 +213,6 @@ public class Player extends GameObject {
         // and the damage calculated above
     }*/
     // TODO: Update shootBullet() to shootBullet(BulletManager bulletManager)!
-    public void shootBullet(BulletManager bulletManager) {
-        // - If bulletManager is null, return immediately
-        // - If shootingPattern is not null, call execute() from the player's muzzle coordinates (x + width / 2f - 8f, y + height)
-        // - If shootingPattern is null, call bulletManager.spawnPlayerBullet() directly
-        if (bulletManager == null){
-            return;
-        }
-        // TODO 1: Check whether shootTimer is greater than or equal to shootCooldown.
-        // If YES:
-        if(shootTimer >= shootCooldown){
-            if (shootingPattern != null) {
-                shootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
-            } else {
-                bulletManager.spawnPlayerBullet(x + width / 2f - 8f, y + height, 0, 400f, 10 + power);
-            }
-            shootTimer = 0;
-        }
-        // TODO 2: Reset shootTimer back to 0
-
-    }
     // TODO: Provide a getter and setter for shootingPattern
     public ShootingPattern getShootingPattern() {
         return shootingPattern;
@@ -230,12 +228,28 @@ public class Player extends GameObject {
         // 1. Check whether spellCards > 0.
         if (spellCards > 0){
             spellCards -= 1;
-            notifySpellCardsChanged();
             invulnerableTimer = 5.0f;
+            notifySpellCardsChanged();
+
             if (bulletManager != null){
                 bulletManager.clearEnemyBullets(entities);
                 System.out.println(name + " unleashes SPEL CARD (Fantasy Seal)! All enemy bullets cleared");
+                // Search for an active enemy target to chase (Boss or Fairy)
+                GameObject target = null;
+                if (entities != null) {
+                    for (GameObject obj : entities) {
+                        if (obj instanceof Enemy enemy && !enemy.isDestroyed()) {
+                            target = enemy;
+                            break;
+                        }
+                    }
+                }
+
+                // TODO (2 points): Call spawnBombOrbs on bulletManager from Player center (x + width / 2f, y + height / 2f) with target and entities arguments
+                bulletManager.spawnBombOrbs(x + width / 2f, y + height / 2f,target,entities);
             }
+            System.out.println(name + " unleashes SPELL CARD: Spirit Sign Fantasy Seal (霊符「夢想封印」)! All enemy bullets cleared & 8 homing orbs launched!");
+
         }
         else{
             System.out.println("No Spell Cards (Bombs) remaining");
@@ -263,6 +277,32 @@ public class Player extends GameObject {
     }
 
 
+    @Override
+    public void shootBullet(BulletManager bulletManager) {
+        if (bulletManager == null) return;
+        if (shootTimer >= shootCooldown) {
+            // TODO (2 points): On this line, check if mainShootingPattern is not null. If it is, call mainShootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true). Then change the `if` below (which directly checks `shootingPattern != null`) to an `else if`
+            if (mainShootingPattern != null){
+                mainShootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
+            }
+            else if (shootingPattern != null) {
+                shootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
+            } else {
+                bulletManager.spawnPlayerBullet(x + width / 2f - 8f, y + height, 0, 400f, 10 + power);
+            }
+            shootTimer = 0f;
+        }
+
+        // TODO (2 points): If sideShootingPattern is not null and homingShootTimer is greater than or equal to homingCooldown,
+        // call sideShootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true), then reset homingShootTimer to zero.
+        sideShootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
+        this.homingShootTimer = 0f;
+    }
+
+    public ShootingPattern getMainShootingPattern() { return mainShootingPattern; }
+    public ShootingPattern getSideShootingPattern() { return sideShootingPattern; }
+    public float getShootCooldown() { return shootCooldown; }
+    public float getHomingCooldown() { return homingCooldown; }
 
 
     public void addScore(long points) {
@@ -277,15 +317,20 @@ public class Player extends GameObject {
     @Override
     public void update(float delta) {
         super.update(delta);
-        float dx = 0f;
         // TODO: Increment shootTimer by delta (shootTimer += delta;)
         //       Make sure all old Gdx.input reading code inside update() has been removed
         shootTimer += delta;
+        shootTimer += delta;
+        homingShootTimer += delta;
+
+        if (shootTimer > 0.15f) {
+            shootTimer = shootCooldown;
+            homingShootTimer = homingCooldown;
+        }
         if (invulnerableTimer > 0f) {
             invulnerableTimer -= delta;
             if (invulnerableTimer < 0f) invulnerableTimer = 0f;
         }
-        updateAnimationState(dx);
 
     }
     // Execute movement from MoveCommand with playfield boundary clamping (Playfield Clamping)
@@ -323,7 +368,7 @@ public class Player extends GameObject {
             //    Store it in a local variable of type Animation<TextureRegion> named anim.
             // 4. If anim is not null, assign it using setAnimation(...).
             if (currentDir != -1){
-                this.currentDir = -1;
+                currentDir = -1;
                 Animation<TextureRegion> anim = assets.getAnimation("player_left");
                 if (anim != null){
                     setAnimation(anim);
@@ -338,7 +383,7 @@ public class Player extends GameObject {
             //    Store it in a local variable of type Animation<TextureRegion> named anim.
             // 4. If anim is not null, assign it using setAnimation(...).
             if (currentDir != 1){
-                this.currentDir = 1;
+                currentDir = 1;
                 Animation<TextureRegion> anim = assets.getAnimation("player_right");
                 if (anim != null){
                     setAnimation(anim);
@@ -352,7 +397,7 @@ public class Player extends GameObject {
             //    Store it in a local variable of type Animation<TextureRegion> named anim.
             // 4. If anim is not null, assign it using setAnimation(...).
             if ( currentDir != 0){
-                this.currentDir = 0;
+                currentDir = 0;
                 Animation<TextureRegion>anim = assets.getAnimation("player_idle");
                 if (anim != null){
                     setAnimation(anim);
@@ -415,7 +460,11 @@ public class Player extends GameObject {
 
     // TODO: Create getter isFocused(), setter setFocused(boolean focused), and getter getGrazeCount()
     public boolean isFocused(){ return this.focused; }
-    public void setFocused(boolean focused){ this.focused = focused; }
+    public void setFocused(boolean focused){
+        if (this.focused != focused) {
+            this.focused = focused;
+            updatePowerStrategy();
+        } }
     public int getGrazeCount(){ return this.grazeCount; }
 
     public void takeDamage(int damage) {
@@ -501,6 +550,8 @@ public class Player extends GameObject {
             switch (type) {
                 case POWER -> {
                     this.power += type.getPowerBonus();
+                    updatePowerStrategy();
+                    notifyPowerChanged();
                     addScore(item.getScoreValue());
                     System.out.println(name + " collected POWER item! Power increased to " + power);
                     notifyPowerChanged();
@@ -555,6 +606,94 @@ public class Player extends GameObject {
         notifyHpChanged();
         notifyPowerChanged();
         notifySpellCardsChanged();
+    }
+    // TODO (6 points): Implement Dynamic Strategy Swapping on Player Reimu
+    public void updatePowerStrategy() {
+        float spreadAngle = focused ? 4f : 18f;
+        float dualSpreadAngle = focused ? 3f : 12f;
+        float sideHOffset = focused ? 8f : 24f;
+        float sideVOffset = focused ? 16f : -16f;
+        float leftAngle = focused ? 100f : 120f;
+        float rightAngle = focused ? 80f : 60f;
+
+        float normalSpeed = 720f;
+        float homingSpeed = 500f;
+
+        // 2. Evaluate player power ranks (Authentic Touhou 6 EoSD Power Ranks):
+        if (power < 8) {
+            // Rank 1 (Power 0 - 7): 1 Center Straight Shot
+            // TODO: Set Main Shooting Pattern as FrontShot with normalSpeed and DMG 48
+            // TODO: Set Side Shooting Pattern as null
+            mainShootingPattern = new FrontShot(normalSpeed,48);
+            sideShootingPattern = null;
+            homingCooldown = 30f / 60f;
+        } else if (power < 16) {
+            // Rank 2 (Power 8 - 15): 1 Center Straight Shot + 2 Homing Flank Amulets (Homing SideShot)
+            // TODO: Set Main Shooting Pattern as FrontShot with normalSpeed and DMG 48
+            // TODO: Set Side Shooting Pattern as SideShot with homingSpeed, DMG 14, offsets (sideHOffset, sideVOffset), angles (leftAngle, rightAngle), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            mainShootingPattern = new FrontShot(normalSpeed, 48);
+            sideShootingPattern = new SideShot(homingSpeed,14,sideHOffset,sideVOffset,leftAngle,rightAngle,true, new HomingBulletMovement(360f),"bullet_amulet_homing");
+            homingCooldown = 30f / 60f;
+        } else if (power < 32) {
+            // Rank 3 (Power 16 - 31): 2 Tightly Spaced Center Straight Shots + 2 Homing Flank Amulets
+            // TODO: Set Main Shooting Pattern as SpreadShot with normalSpeed, 2 bullets, angle dualSpreadAngle, DMG 30, horizontalSpacing 8f, and null for movementPattern, target, and spriteKey
+            // TODO: Set Side Shooting Pattern as SideShot with homingSpeed, DMG 14, offsets (sideHOffset, sideVOffset), angles (leftAngle, rightAngle), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            mainShootingPattern = new SpreadShot(normalSpeed,2,dualSpreadAngle,30, 8f,null,null, null);
+            sideShootingPattern = new SideShot(homingSpeed,14,sideHOffset,sideVOffset,leftAngle,rightAngle,true, new HomingBulletMovement(360f),"bullet_amulet_homing");
+            homingCooldown = 30f / 60f;
+        } else if (power < 48) {
+            // Rank 4 (Power 32 - 47): 3 Center Fan Spread Shots + 2 Homing Flank Amulets
+            // TODO: Set Main Shooting Pattern as SpreadShot with normalSpeed, 3 bullets, angle spreadAngle, and DMG 26
+            // TODO: Set Side Shooting Pattern as SideShot with homingSpeed, DMG 14, offsets (sideHOffset, sideVOffset), angles (leftAngle, rightAngle), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            mainShootingPattern = new SpreadShot(normalSpeed,3,spreadAngle,26);
+            sideShootingPattern = new SideShot(homingSpeed,14,sideHOffset,sideVOffset,leftAngle,rightAngle,true, new HomingBulletMovement(360f),"bullet_amulet_homing");
+            homingCooldown = 30f / 60f;
+        } else if (power < 64) {
+            // Rank 5 (Power 48 - 63): 3 Center Fan Spread Shots + Homing Amulets (Cadence accelerated to 15 frames / 0.25s!)
+            // TODO: Set Main Shooting Pattern as SpreadShot with normalSpeed, 3 bullets, angle spreadAngle, and DMG 26
+            // TODO: Set Side Shooting Pattern as SideShot with homingSpeed, DMG 12, offsets (sideHOffset, sideVOffset), angles (leftAngle, rightAngle), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            mainShootingPattern = new SpreadShot(normalSpeed,3,spreadAngle,26);
+            sideShootingPattern =  new SideShot(homingSpeed,12,sideHOffset,sideVOffset,leftAngle,rightAngle,true, new HomingBulletMovement(360f),"bullet_amulet_homing");
+            homingCooldown = 15f / 60f;
+        } else if (power < 80) {
+            // Rank 6 (Power 64 - 79): 3 Center Fan Spread Shots + 4 Homing Amulets (Composite Pattern)
+            // TODO: Set Main Shooting Pattern as SpreadShot with normalSpeed, 3 bullets, angle spreadAngle, and DMG 26
+            // TODO: Set Side Shooting Pattern as CompositeShootingPattern with 2 SideShots:
+            //       1) SideShot with homingSpeed, DMG 9, offsets (sideHOffset, sideVOffset), angles (leftAngle, rightAngle), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            //       2) SideShot with homingSpeed, DMG 12, offsets (sideHOffset + 4f, sideVOffset), angles (leftAngle + 30f, rightAngle - 30f), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            mainShootingPattern = new SpreadShot(normalSpeed,3,spreadAngle,26);
+            sideShootingPattern = new CompositeShootingPattern(new SideShot(homingSpeed,9,sideHOffset,sideVOffset,leftAngle,rightAngle,true,new HomingBulletMovement(360f),"bullet_amulet_homing"),new SideShot(homingSpeed,12,sideHOffset+4f,sideVOffset,leftAngle+30f,rightAngle-30f,true,new HomingBulletMovement(360f),"bullet_amulet_homing") );
+            homingCooldown = 15f / 60f;
+        } else if (power < 128) {
+            // Rank 7 & 8 (Power 80 - 127): 3 Center Fan Spread Shots + 4 Tightly Angled Homing Amulets
+            // TODO: Set Main Shooting Pattern as SpreadShot with normalSpeed, 3 bullets, angle spreadAngle, and DMG 26
+            // TODO: Set Side Shooting Pattern as CompositeShootingPattern with 2 SideShots:
+            //       1) SideShot with homingSpeed, DMG 8, offsets (sideHOffset, sideVOffset), angles (leftAngle - 10f, rightAngle + 10f), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            //       2) SideShot with homingSpeed, DMG 8, offsets (sideHOffset + 4f, sideVOffset), angles (leftAngle + 10f, rightAngle - 10f), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            mainShootingPattern = new SpreadShot(normalSpeed,3,spreadAngle,26);
+            sideShootingPattern = new CompositeShootingPattern(new SideShot(homingSpeed,8,sideHOffset,sideVOffset,leftAngle-10f,rightAngle+10f,true,new HomingBulletMovement(360f),"bullet_amulet_homin"),
+                new SideShot(homingSpeed,8,sideHOffset+4f,sideVOffset,leftAngle+10f,rightAngle-10f,true, new HomingBulletMovement(360f),"bullet_amulet_homing"));
+            homingCooldown = 15f / 60f;
+        } else {
+            // Rank 9 (Power 128 MAX): 4 Spaced Center Fan Spread Shots + 6 Maximum Homing Amulets
+            // TODO: Set Main Shooting Pattern as SpreadShot with normalSpeed, 4 bullets, angle spreadAngle * 1.2f, DMG 24, horizontalSpacing 16f, and null for movementPattern, target, and spriteKey
+            // TODO: Set Side Shooting Pattern as CompositeShootingPattern with 3 SideShots:
+            //       1) SideShot with homingSpeed, DMG 8, offsets (sideHOffset, sideVOffset), angles (leftAngle - 10f, rightAngle + 10f), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            //       2) SideShot with homingSpeed, DMG 8, offsets (sideHOffset + 4f, sideVOffset), angles (leftAngle + 10f, rightAngle - 10f), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            //       3) SideShot with homingSpeed, DMG 8, offsets (sideHOffset + 8f, sideVOffset), angles (leftAngle + 30f, rightAngle - 30f), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
+            mainShootingPattern = new SpreadShot(normalSpeed,4,spreadAngle*1.2f,24,16f,null,null,null);
+            sideShootingPattern = new CompositeShootingPattern(new SideShot(homingSpeed,8,sideHOffset,sideVOffset,leftAngle-10f,rightAngle+10f,true,new HomingBulletMovement(360f),"bullet_amulet_homing"),
+                new SideShot(homingSpeed,8,sideHOffset+4f,sideVOffset,leftAngle+10f,rightAngle-10f,true,new HomingBulletMovement(360f),"bullet_amulet_homing"),
+                new SideShot(homingSpeed,8,sideHOffset+8f,sideVOffset,leftAngle+30f,rightAngle-30f,true,new HomingBulletMovement(360f),"bullet_amulet_homing"));
+            homingCooldown = 15f / 60f;
+        }
+
+        // 3. Attach composite strategy to superclass EntityShooter attribute
+        if (sideShootingPattern != null) {
+            setShootingPattern(new CompositeShootingPattern(mainShootingPattern, sideShootingPattern));
+        } else {
+            setShootingPattern(mainShootingPattern);
+        }
     }
 
 

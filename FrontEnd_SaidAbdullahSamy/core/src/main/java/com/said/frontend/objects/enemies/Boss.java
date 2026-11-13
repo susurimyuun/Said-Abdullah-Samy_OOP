@@ -3,28 +3,27 @@ package com.said.frontend.objects.enemies;
 import com.badlogic.gdx.graphics.Color;
 import com.said.frontend.objects.Collidable;
 import com.said.frontend.objects.Player;
-import com.said.frontend.objects.enemies.Enemy;
 import com.said.frontend.objects.patterns.ShootingPattern;
+import com.said.frontend.objects.patterns.entityStrategy.FixedMovement;
 import com.said.frontend.objects.patterns.shootingStrategy.SpreadShot;
 import com.said.frontend.objects.systems.BulletManager;
 
 
 public class Boss extends Enemy {
-    private ShootingPattern shootingPattern = new SpreadShot(200f,3,30f);
+    private ShootingPattern shootingPattern;
 
     public Boss(String name, int hp){
         super(380,400,64,64, Color.BLUE,name,hp,5000L);
-        this.name = name;
-        this.hp = hp;
-        this.maxHp = hp;
-        this.scoreValue = 5000L;
+
+        setShootingPattern(new SpreadShot(200f,3,30f));
+        setMovementPattern(new FixedMovement());
+
     }
     public Boss(float x, float y, String name, int hp){
 
         super(x,y,64,64,Color.BLUE,name,hp,5000L);
-        this.name = name;
-        this.hp = hp;
-        this.maxHp = hp;
+        setShootingPattern(new SpreadShot(200f,3,30f));
+        setMovementPattern(new FixedMovement());
     }
 
     public void shootBullet(BulletManager bulletManager) {

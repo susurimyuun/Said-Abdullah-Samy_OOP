@@ -1,11 +1,16 @@
 package com.said.frontend.objects.systems;
 
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.bullets.Bullet;
 import com.said.frontend.objects.bullets.BulletType;
 import com.said.frontend.objects.items.Item;
 import com.said.frontend.objects.items.ItemType;
+import com.said.frontend.objects.patterns.bulletStrategy.FantasySealMovement;
+import com.said.frontend.objects.patterns.bulletStrategy.HomingBulletMovement;
+import com.said.frontend.objects.patterns.shootingStrategy.CompositeShootingPattern;
+import com.said.frontend.objects.patterns.shootingStrategy.RingShot;
 
 import java.util.*;
 
@@ -18,6 +23,7 @@ public class BulletManager {
     private List<Bullet> activePlayerBullets;
     private List<Bullet> activeEnemyBullets;
 
+    private List<GameObject> entities; // [ADDITION] Add field to hold the arena entity list
     public BulletManager() {
         // TODO:
         // 1. Initialize playerBulletPool and enemyBulletPool as empty LinkedLists
@@ -28,8 +34,9 @@ public class BulletManager {
         activeEnemyBullets = new ArrayList<>();
     }
 
-    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage) {
+    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage, String spriteKey){
         Bullet bullet;
+        String key = (spriteKey != null) ? spriteKey : "bullet_amulet"; // Add local String variable key
         // TODO:
         // 1. Check whether playerBulletPool is not empty.
         //    If so, poll from the pool. If not, create a new one using the Factory.
@@ -38,16 +45,26 @@ public class BulletManager {
         // 4. Return the bullet instance.
         if (!playerBulletPool.isEmpty()){
             bullet = playerBulletPool.poll();
+            bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
+            bullet.setSprite(AssetManager.getInstance().getTextureRegion(key)); // Add setSprite using key
         }
         else {
             bullet = EntityFactory.createPlayerBullet(x,y,damage);
         }
+        bullet = EntityFactory.createPlayerBullet(x, y, damage, key); // Add key as 4th argument
         bullet.init(x,y,vx,vy, BulletType.AMULET,damage,true);
         activePlayerBullets.add(bullet);
         return bullet;
     }
-    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage) {
+    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage){
+        return spawnEnemyBullet(x,y,vx,vy,damage,"bullet_danmaku");
+    }
+    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage){
+        return spawnPlayerBullet(x,y,vx,vy,damage,"bullet_amulet");
+    }
+    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage, String spriteKey){
         Bullet bullet;
+        String key = (spriteKey != null) ? spriteKey : "bullet_danmaku";
         // TODO:
         // 1. Check whether enemyBulletPool is not empty:
         //    If so, poll from the pool. If not, create a new one using the Factory.
@@ -56,11 +73,13 @@ public class BulletManager {
         // 4. Return the bullet instance
         if(!enemyBulletPool.isEmpty()){
             bullet = enemyBulletPool.poll();
+            bullet.init(x,y,vx,vy,BulletType.DANMAKU,damage,false);
+            bullet.setSprite(AssetManager.getInstance().getTextureRegion(key)); // Add setSprite using key
         }
         else {
-            bullet = EntityFactory.createEnemyBullet(x,y,damage);
+            bullet = EntityFactory.createEnemyBullet(x,y,damage,key);
+            bullet.init(x, y, vx, vy, BulletType.DANMAKU, damage, false);
         }
-        bullet.init(x,y,vx,vy,BulletType.DANMAKU,damage,false);
         activeEnemyBullets.add(bullet);
         return bullet;
     }
@@ -96,6 +115,10 @@ public class BulletManager {
         Iterator<Bullet> lists = activePlayerBullets.iterator();
         while (lists.hasNext()){
             Bullet object = lists.next();
+
+            if (entities != null && object.getMovementPattern() instanceof HomingBulletMovement homing && homing.getEntities() == null) {
+                homing.setEntities(entities);
+            }
             object.update(delta);
             if (object.isOffScreen(screenWidth,screenHeight) || object.isDestroyed()){
                 System.out.println("Removed via Generic Iterator " + object.getClass().getSimpleName());
@@ -121,6 +144,11 @@ public class BulletManager {
             }
         }
     }
+
+    // [ADDITION] Add the following getters & setters at the bottom of the BulletManager class:
+    public List<GameObject> getEntities() { return entities; }
+    public void setEntities(List<GameObject> entities) { this.entities = entities; }
+
 
     // Spell Card (Bomb) Execution: Clear all active enemy bullets and convert them into POINT item drops!
     public void clearEnemyBullets(List<GameObject> entities) {
@@ -153,6 +181,21 @@ public class BulletManager {
             playerBulletPool.offer(bullet);
         }
     }
+
+    public void spawnBombOrbs(float originX, float originY, GameObject targetEnemy, List<GameObject> entities) {
+        int orbCount = 8;
+        int orbDamage = 35; // 35 damage x 8 orbs = 280 total spell card damage potential!
+
+        List<GameObject> targetEntities = (entities != null) ? entities : this.entities;
+        // TODO (2 points): Apply Strategy Composition — instantiate a RingShot object with bulletSpeed 150f, bullet count orbCount, damage orbDamage, and bullet movement strategy FantasySealMovement(targetEnemy, targetEntities), then call execute(originX, originY, this, true)
+        new RingShot(150f,orbCount,orbDamage, new FantasySealMovement(targetEnemy,targetEntities)).execute(originX,originY,this,true);
+        System.out.println("[BulletManager] Spawned 8 Bomb Spirit Orbs via RingShot composed with FantasySealMovement!");
+    }
+
+    public void spawnBombOrbs(float originX, float originY, GameObject targetEnemy) {
+        spawnBombOrbs(originX, originY, targetEnemy, null);
+    }
+
 
 
 }

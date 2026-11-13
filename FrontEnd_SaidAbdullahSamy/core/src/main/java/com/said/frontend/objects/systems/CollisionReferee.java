@@ -49,6 +49,7 @@ public class CollisionReferee {
 
                         }
                         bullet.destroy();
+                        break;
                     }
                 }
             }

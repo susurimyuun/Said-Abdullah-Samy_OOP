@@ -88,10 +88,15 @@ public class EntityFactory {
 
 
     // Create an enemy bullet (type DANMAKU, speed 0f, sprite bullet_danmaku)
-    public static Bullet createEnemyBullet(float x, float y, int damage) {
+    public static Bullet createEnemyBullet(float x, float y, int damage, String spriteKey) {
         Bullet bullet = new Bullet(x, y, 0f, BulletType.DANMAKU, damage);
-        TextureRegion sprite = AssetManager.getInstance().getTextureRegion("bullet_danmaku");
+        String key = (spriteKey != null)? spriteKey : "bullet_danmaku";
+        TextureRegion sprite = AssetManager.getInstance().getTextureRegion(key);
         bullet.setSprite(sprite);
         return bullet;
+    }
+    // [ADDITION] Add the following 3-parameter overloaded method (delegating to the 4-parameter method above):
+    public static Bullet createEnemyBullet(float x, float y, int damage) {
+        return createEnemyBullet(x, y, damage, "bullet_danmaku");
     }
 }

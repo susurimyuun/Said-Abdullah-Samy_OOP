@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.said.frontend.objects.Collidable;
 import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.enemies.Enemy;
+import com.said.frontend.objects.patterns.bulletStrategy.BulletMovementPattern;
 
 public class Bullet extends GameObject {
     private BulletType bulletType ;
@@ -17,6 +18,9 @@ public class Bullet extends GameObject {
     private float vx, vy;
     private float angle = 90f;
     private boolean isPlayerBullet, grazed;
+
+    private BulletMovementPattern movementPattern;
+
 
     public Bullet(float x, float y, BulletType bulletType, int damage) {
         super(x, y, 16, 16, 400f, Color.YELLOW);
@@ -51,9 +55,17 @@ public class Bullet extends GameObject {
     public void update(float delta) {
         // TODO: increase the y position by speed * delta (bullet moves upward)
         super.update(delta);
-
-        this.x += this.vx * delta;
-        this.y += this.vy * delta;
+        // TODO (6 points):
+        // Check whether movementPattern is not null:
+        // - If present (not null): delegate movement to movementPattern.move(this, delta);
+        // - If null: retain default movement (add vx * delta to x and vy * delta to y)
+        if(movementPattern != null){
+            movementPattern.move(this,delta);
+        }
+        else {
+            this.x += this.vx * delta;
+            this.y += this.vy * delta;
+        }
     }
 
     public BulletType getBulletType() {
@@ -104,6 +116,8 @@ public class Bullet extends GameObject {
         this.stateTime = 0.0f;
 
         this.grazed = false;
+
+        this.movementPattern = null;
     }
 
     @Override
@@ -148,6 +162,8 @@ public class Bullet extends GameObject {
         this.grazed = grazed;
     }
 
+    public BulletMovementPattern getMovementPattern() { return movementPattern; }
+    public void setMovementPattern(BulletMovementPattern movementPattern) { this.movementPattern = movementPattern; }
 
 
 

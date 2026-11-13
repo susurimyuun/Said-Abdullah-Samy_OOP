@@ -222,6 +222,16 @@ public class AssetManager {
         registerRegionFromSheet("bullet_danmaku","bullets_small.png",16,16,1,2);
         registerRegionFromSheet("bullet_danmaku_homing","bullets_large.png",16,16,1,0);
 
+        // TODO (4 points): Register Danmaku bullet texture color variants (bullets_small.png, 16x16 per tile)
+// Use registerRegionFromSheet() with parameters: key, filename, tileWidth, tileHeight, row, col
+        registerRegionFromSheet("bullet_danmaku",        "bullets_small.png", 16, 16, 2, 3); // Default / Blue
+        registerRegionFromSheet("bullet_danmaku_blue",   "bullets_small.png", 16, 16, 2, 3);
+        registerRegionFromSheet("bullet_danmaku_red",    "bullets_small.png", 16, 16, 2, 6);
+        registerRegionFromSheet("bullet_danmaku_purple", "bullets_small.png", 16, 16, 2, 4);
+        registerRegionFromSheet("bullet_danmaku_orange", "bullets_small.png", 16, 16, 2, 15);
+        registerRegionFromSheet("bullet_danmaku_green",  "bullets_small.png", 16, 16, 2, 10);
+
+
         loadmusic("bgm_lalaland","testing_miasebastian.mp3");
         loadmusic("bgm_touhou","testing_touhou.mp3");
 

@@ -15,6 +15,9 @@ import com.said.frontend.objects.items.Item;
 import com.said.frontend.objects.items.ItemType;
 
 import com.badlogic.gdx.Input;
+import com.said.frontend.objects.patterns.entityStrategy.SCurveMovement;
+import com.said.frontend.objects.patterns.entityStrategy.TargetPointMovement;
+import com.said.frontend.objects.patterns.shootingStrategy.SpreadShot;
 import com.said.frontend.objects.systems.AssetManager;
 import com.said.frontend.objects.systems.BulletManager;
 import com.said.frontend.objects.systems.CollisionReferee;
@@ -52,9 +55,31 @@ public class Main extends ApplicationAdapter {
 
     private void updateEnemyScheduler(float delta) {
         enemyShootTimer += delta;
-        if (enemyShootTimer >= 1.5f) {
+        updateFairyWave(delta);
+        fairyList.removeIf(f -> f.isDestroyed() || f.isOffScreen(416, 560));
+        if (enemyShootTimer >= 1.5f && bossObject != null && !bossObject.isDestroyed()) {
             bossObject.shootBullet(bulletManager);
             enemyShootTimer = 0f;
+        }
+        // 3. Dynamic Strategy Swapping for Rumia Every 4.0 Seconds
+        phaseTimer += delta;
+        if (phaseTimer >= 4.0f && bossObject != null && !bossObject.isDestroyed()) {
+            phaseTimer = 0f;
+            currentPhase = (currentPhase + 1) % 2;
+
+            if (currentPhase == 0) {s
+                // Phase 1: Move to Upper Left (120, 420) & Aimed SpreadShot pattern (Red Fan)
+                // TODO (1 point): Inject Movement Pattern into boss as TargetPointMovement to coordinates (120f, 420f) with speed 150f
+                // TODO (1 point): Inject Shooting Pattern into boss as SpreadShot with speed 220f, 5 bullets, angle 25f, DMG 10, target player, and sprite "bullet_danmaku_red"
+                bossObject.setMovementPattern(new TargetPointMovement(120f,420f,150f));
+                bossObject.setShootingPattern(new SpreadShot(220f,5,25f,10,playerObject,"bullet_danmaku_red"));
+                System.out.println("[Boss Strategy] Rumia shifted to Upper Left with Aimed SpreadShot!");
+            } else {
+                // Phase 2: Move to Upper Right (280, 420) & AlternatingRingShot pattern (Ring Nova)
+                // TODO (1 point): Inject Movement Pattern into boss as TargetPointMovement to coordinates (280f, 420f) with speed 150f
+                // TODO (1 point): Inject Shooting Pattern into boss as AlternatingRingShot with baseSpeed 180f, 16 bullets per ring, and DMG 10
+                System.out.println("[Boss Strategy] Rumia shifted to Upper Right with AlternatingRingShot!");
+            }
         }
     }
     private void restartGame() {
@@ -120,15 +145,18 @@ public class Main extends ApplicationAdapter {
         // fairyObject = new Fairy(150,380,"Red Fairy",20);
 
         // TODO 4: Instantiate Boss (Blue square) at (380, 400)
-        bossObject = EntityFactory.createBoss(250,400,"Rumia",150);
+        bossObject = EntityFactory.createBoss(200, 420, "Rumia", 150);
         // TODO 5: Instantiate Items (White squares) with downward speeds
         itemsObject = EntityFactory.createItem(180,450,ItemType.POWER);
 
         powerItem = EntityFactory.createItem(220, 450, ItemType.POWER);
         pointItem = EntityFactory.createItem(320, 480,  ItemType.POINT);
 
-        fairyList.add(EntityFactory.createFairy(150,380,"Read Fairy",20));
-        fairyList.add(EntityFactory.createFairy(250,380,"Blue Fairy",20,"fairy_idle_blue"));
+        bulletManager.setEntities(entities);
+// TODO (3 points): Inject initial strategies into Boss Rumia
+        bossObject.setMovementPattern(new TargetPointMovement(200f, 420f, 150f));
+        bossObject.setShootingPattern(new SpreadShot(220f, 5, 25f, 10, playerObject, "bullet_danmaku_red"));
+
 
 
         // TODO 5:
@@ -140,6 +168,38 @@ public class Main extends ApplicationAdapter {
         entities.add(powerItem);
         entities.add(pointItem);
     }
+
+    // Stage 1: Wave 1 Fairy Stream
+    private float waveTimer = 0f;
+    private int wave1SpawnIndex = 0;
+
+    private void updateFairyWave(float delta) {
+        float[] spawnX = {60f, 68f, 76f, 84f, 92f};
+        waveTimer += delta;
+        if (wave1SpawnIndex < spawnX.length && waveTimer >= 1.0f + wave1SpawnIndex * 0.267f) {
+            float x = spawnX[wave1SpawnIndex++];
+            Fairy f = EntityFactory.createFairy(x, 480f, "Left S-Curve Fairy", 8, "fairy_idle_blue");
+
+            // TODO (2 points): Set Movement Pattern on f as SCurveMovement with speed 130f, initialAngle (float) Math.toRadians(270), and mirrored false
+            // TODO (1 point): Set Shooting Pattern on f as null
+            f.setMovementPattern(new SCurveMovement(130f,(float) Math.toRadians(270),false));
+            f.setShootingPattern(null);
+
+            fairyList.add(f);
+            entities.add(f);
+        }
+    }
+    private float phaseTimer = 0f;
+    private int currentPhase = 0; // 0: Upper Left (Aimed SpreadShot), 1: Upper Right (AlternatingRingShot)
+
+
+    private void resetFairyWave() {
+        waveTimer = 0f;
+        wave1SpawnIndex = 0;
+    }
+
+
+
 
     @Override
     public void render() {
