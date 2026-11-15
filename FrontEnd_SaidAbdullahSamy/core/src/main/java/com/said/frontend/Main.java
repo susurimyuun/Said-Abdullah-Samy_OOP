@@ -17,6 +17,7 @@ import com.said.frontend.objects.items.ItemType;
 import com.badlogic.gdx.Input;
 import com.said.frontend.objects.patterns.entityStrategy.SCurveMovement;
 import com.said.frontend.objects.patterns.entityStrategy.TargetPointMovement;
+import com.said.frontend.objects.patterns.shootingStrategy.AlternatingRingShot;
 import com.said.frontend.objects.patterns.shootingStrategy.SpreadShot;
 import com.said.frontend.objects.systems.AssetManager;
 import com.said.frontend.objects.systems.BulletManager;
@@ -67,7 +68,7 @@ public class Main extends ApplicationAdapter {
             phaseTimer = 0f;
             currentPhase = (currentPhase + 1) % 2;
 
-            if (currentPhase == 0) {s
+            if (currentPhase == 0) {
                 // Phase 1: Move to Upper Left (120, 420) & Aimed SpreadShot pattern (Red Fan)
                 // TODO (1 point): Inject Movement Pattern into boss as TargetPointMovement to coordinates (120f, 420f) with speed 150f
                 // TODO (1 point): Inject Shooting Pattern into boss as SpreadShot with speed 220f, 5 bullets, angle 25f, DMG 10, target player, and sprite "bullet_danmaku_red"
@@ -78,6 +79,8 @@ public class Main extends ApplicationAdapter {
                 // Phase 2: Move to Upper Right (280, 420) & AlternatingRingShot pattern (Ring Nova)
                 // TODO (1 point): Inject Movement Pattern into boss as TargetPointMovement to coordinates (280f, 420f) with speed 150f
                 // TODO (1 point): Inject Shooting Pattern into boss as AlternatingRingShot with baseSpeed 180f, 16 bullets per ring, and DMG 10
+                bossObject.setMovementPattern(new TargetPointMovement(280f, 420f, 150f));
+                bossObject.setShootingPattern(new AlternatingRingShot(180f, 16, 10));
                 System.out.println("[Boss Strategy] Rumia shifted to Upper Right with AlternatingRingShot!");
             }
         }

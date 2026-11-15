@@ -124,13 +124,11 @@ public class Player extends EntityShooter {
     public Player(String name, int hp, int power, int spellCards){
         super(280,40,32,48,240f, Color.RED);
         setMovementPattern(new FixedMovement());
-        updatePowerStrategy();
-
         this.name = name;
         this.hp = hp;
         this.power = power;
         this.spellCards = spellCards;
-
+        updatePowerStrategy();
     }
 
     public String getName(){
@@ -182,12 +180,12 @@ public class Player extends EntityShooter {
     public Player(float x, float y, String name, int hp, int power, int spellCards){
         super(x,y,32,48,240f, Color.RED);
         setMovementPattern(new FixedMovement());
-        updatePowerStrategy();
+
         this.name = name;
         this.hp = hp;
         this.power = power;
         this.spellCards = spellCards;
-
+        updatePowerStrategy();
     }
     public static void main(String[] args) {
         Player player1 = new Player("Reimu Hakurei",100,15,3);
@@ -295,9 +293,11 @@ public class Player extends EntityShooter {
 
         // TODO (2 points): If sideShootingPattern is not null and homingShootTimer is greater than or equal to homingCooldown,
         // call sideShootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true), then reset homingShootTimer to zero.
+        if(sideShootingPattern != null && homingShootTimer >= homingCooldown){
         sideShootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
         this.homingShootTimer = 0f;
     }
+        }
 
     public ShootingPattern getMainShootingPattern() { return mainShootingPattern; }
     public ShootingPattern getSideShootingPattern() { return sideShootingPattern; }
@@ -319,7 +319,6 @@ public class Player extends EntityShooter {
         super.update(delta);
         // TODO: Increment shootTimer by delta (shootTimer += delta;)
         //       Make sure all old Gdx.input reading code inside update() has been removed
-        shootTimer += delta;
         shootTimer += delta;
         homingShootTimer += delta;
 
@@ -671,7 +670,7 @@ public class Player extends EntityShooter {
             //       1) SideShot with homingSpeed, DMG 8, offsets (sideHOffset, sideVOffset), angles (leftAngle - 10f, rightAngle + 10f), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
             //       2) SideShot with homingSpeed, DMG 8, offsets (sideHOffset + 4f, sideVOffset), angles (leftAngle + 10f, rightAngle - 10f), dualSides true; with bullet movement HomingBulletMovement having turnSpeed 360f; and sprite "bullet_amulet_homing"
             mainShootingPattern = new SpreadShot(normalSpeed,3,spreadAngle,26);
-            sideShootingPattern = new CompositeShootingPattern(new SideShot(homingSpeed,8,sideHOffset,sideVOffset,leftAngle-10f,rightAngle+10f,true,new HomingBulletMovement(360f),"bullet_amulet_homin"),
+            sideShootingPattern = new CompositeShootingPattern(new SideShot(homingSpeed,8,sideHOffset,sideVOffset,leftAngle-10f,rightAngle+10f,true,new HomingBulletMovement(360f),"bullet_amulet_homing"),
                 new SideShot(homingSpeed,8,sideHOffset+4f,sideVOffset,leftAngle+10f,rightAngle-10f,true, new HomingBulletMovement(360f),"bullet_amulet_homing"));
             homingCooldown = 15f / 60f;
         } else {

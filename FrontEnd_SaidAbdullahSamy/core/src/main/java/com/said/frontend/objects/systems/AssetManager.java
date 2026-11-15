@@ -221,7 +221,7 @@ public class AssetManager {
         registerRegionFromSheet("item_life","items.png",16,16,0,5);
         registerRegionFromSheet("bullet_danmaku","bullets_small.png",16,16,1,2);
         registerRegionFromSheet("bullet_danmaku_homing","bullets_large.png",16,16,1,0);
-
+        registerRegionFromSheet("bullet_amulet_homing","amulet_reimu.png",16,16,1,0);
         // TODO (4 points): Register Danmaku bullet texture color variants (bullets_small.png, 16x16 per tile)
 // Use registerRegionFromSheet() with parameters: key, filename, tileWidth, tileHeight, row, col
         registerRegionFromSheet("bullet_danmaku",        "bullets_small.png", 16, 16, 2, 3); // Default / Blue
