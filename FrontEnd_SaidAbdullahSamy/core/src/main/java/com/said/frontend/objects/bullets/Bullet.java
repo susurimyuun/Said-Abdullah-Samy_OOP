@@ -2,6 +2,7 @@ package com.said.frontend.objects.bullets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 import com.said.frontend.objects.Collidable;
 import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.enemies.Enemy;
@@ -21,6 +22,15 @@ public class Bullet extends GameObject {
 
     private BulletMovementPattern movementPattern;
 
+    private static final float PLAYER_SHOT_HITBOX = 12f;
+
+    public Rectangle getShotHitbox() {
+        if (!isPlayerBullet) {
+            return getCoreHitbox();
+        }
+        return new Rectangle(x + (width - PLAYER_SHOT_HITBOX) / 2f, y + (height - PLAYER_SHOT_HITBOX) / 2f,
+            PLAYER_SHOT_HITBOX, PLAYER_SHOT_HITBOX);
+    }
 
     public Bullet(float x, float y, BulletType bulletType, int damage) {
         super(x, y, 16, 16, 400f, Color.YELLOW);

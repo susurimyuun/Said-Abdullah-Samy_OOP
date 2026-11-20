@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CollisionReferee {
+    private int defeatCounter = 0;
+    private int itemDropCount = 0;
+
 
     public void resolveCollisions(Player player, List<GameObject> entities, BulletManager bulletManager) {
         // Hehe, leave this empty for now
@@ -41,15 +44,26 @@ public class CollisionReferee {
             if(bullet.isDestroyed()) continue;
             for(GameObject entity : entities){
                 if(entity instanceof Enemy enemy && !enemy.isDestroyed()){
-                    if(bullet.getCoreHitbox().overlaps(enemy.getCoreHitbox())){
-                        enemy.takeDamage(bullet.getDamage());
-                        if(enemy.isDestroyed()){
-                            player.addScore(enemy.getScoreValue());
-                            newDrops.add(EntityFactory.createItem(enemy.getX(), enemy.getY(), ItemType.POWER));
+                    if(bullet.getShotHitbox().overlaps(enemy.getShotHitbox())){
+                        if(enemy.isDamageable()){
+                            boolean defeated = enemy.takeDamage(bullet.getDamage());
+                            if (defeated) {
+                                player.addScore(enemy.getScoreValue());
+                                ItemType dropType = null;
+                                if (enemy.getItemDrop() != null) {
+                                    dropType = enemy.getItemDrop();
+                                } else if (defeatCounter++ % 3 == 0) {
+                                    dropType = (itemDropCount++ % 2 == 0) ? ItemType.POWER : ItemType.POINT;
+                                }
+                                if (dropType != null) {
+                                    Item drop = EntityFactory.createItem(enemy.getX(), enemy.getY(), dropType);
+                                    newDrops.add(drop);
+                                    System.out.println("[CollisionReferee] Defeated " + enemy.getName() + "! Dropped " + dropType + " item at (" + enemy.getX() + ", " + enemy.getY() + ")");
+                                }
+                            }
 
                         }
-                        bullet.destroy();
-                        break;
+
                     }
                 }
             }
@@ -121,7 +135,7 @@ public class CollisionReferee {
                     player.collectItem(item);
                 }
             }
-            else if(entity instanceof  Enemy enemy){
+            else if(entity instanceof  Enemy enemy && enemy.isCollidable()){
                 if(player.getCoreHitbox().overlaps(enemy.getCoreHitbox())){
                     player.takeDamage(10);
                     // TODO 5: Wrap the contents of this block with `if (!player.isInvulnerable())`

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.said.frontend.commands.Command;
 import com.said.frontend.commands.InputHandler;
+import com.said.frontend.network.ScoreboardFacade;
 import com.said.frontend.objects.GameObject;
 import com.said.frontend.objects.Player;
 import com.said.frontend.objects.enemies.Boss;
@@ -19,10 +20,7 @@ import com.said.frontend.objects.patterns.entityStrategy.SCurveMovement;
 import com.said.frontend.objects.patterns.entityStrategy.TargetPointMovement;
 import com.said.frontend.objects.patterns.shootingStrategy.AlternatingRingShot;
 import com.said.frontend.objects.patterns.shootingStrategy.SpreadShot;
-import com.said.frontend.objects.systems.AssetManager;
-import com.said.frontend.objects.systems.BulletManager;
-import com.said.frontend.objects.systems.CollisionReferee;
-import com.said.frontend.objects.systems.EntityFactory;
+import com.said.frontend.objects.systems.*;
 import com.said.frontend.ui.GameHUD;
 
 import javax.lang.model.element.ElementVisitor;
@@ -53,6 +51,62 @@ public class Main extends ApplicationAdapter {
     // TODO: Declare private fields InputHandler inputHandler and GameHUD gameHUD
     private InputHandler inputHandler;
     private GameHUD gameHUD;
+    // TODO (2 points):
+    // Complete the additional constants and fields of `Main` referring to the UML above
+    // (player name constant to be saved to the leaderboard using your own username,
+    // leaderboard size limit = 5, ScoreboardFacade instance, and a flag so the score
+    // is only submitted once per run).
+    public static String PLAYER_NAME = "Susurinaki (SaidSamy)";
+    private static int LEADERBOARD_SIZE = 5;
+    private ScoreboardFacade scoreboard;
+    private boolean scoreSubmitted;
+
+    private StageFacade stage;
+
+    @Override
+    public void create() {
+        batch = new SpriteBatch();
+        gameHUD = new GameHUD();
+        AssetManager.getInstance().init();
+        AssetManager.getInstance().playBGM("bgm_lalaland");
+
+        stage = new StageFacade(gameHUD);
+        // TODO (1 point): Initialize the stage facade component according to the UML, passing in gameHUD.
+        stage.restart();
+        // TODO (1 point): Initialize the network facade component (the one you just pasted) according to the UML.
+        scoreboard = new ScoreboardFacade();
+    }
+
+
+    @Override
+    public void render() {
+        float delta = Gdx.graphics.getDeltaTime();
+
+        if (Gdx.input != null && Gdx.input.isKeyJustPressed(Input.Keys.R)
+            && (stage.isGameOver() || stage.isStageClear())) {
+            stage.restart();
+            gameHUD.clearScoreboard();
+        }
+
+        stage.update(delta);
+        gameHUD.setStageClear(stage.isStageClear());
+
+        ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
+        batch.begin();
+        stage.render(batch);
+        gameHUD.render(batch);
+        batch.end();
+
+        gameHUD.renderBackground();
+        stage.renderOverlay(gameHUD.getShapeRenderer());
+    }
+
+    @Override
+    public void dispose() {
+        if (batch != null) batch.dispose();
+        if (gameHUD != null) gameHUD.dispose();
+        AssetManager.getInstance().dispose();
+    }
 
     private void updateEnemyScheduler(float delta) {
         enemyShootTimer += delta;
@@ -117,7 +171,7 @@ public class Main extends ApplicationAdapter {
 
 
 
-    @Override
+    /*@Override
     public void create() {
         shapeRenderer = new ShapeRenderer();
         entities = new ArrayList<>();
@@ -170,7 +224,7 @@ public class Main extends ApplicationAdapter {
         entities.add(itemsObject);
         entities.add(powerItem);
         entities.add(pointItem);
-    }
+    }*/
 
     // Stage 1: Wave 1 Fairy Stream
     private float waveTimer = 0f;
@@ -204,7 +258,7 @@ public class Main extends ApplicationAdapter {
 
 
 
-    @Override
+    /*@Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
         // 0. Restart Game on 'R' key when Game Over
@@ -257,15 +311,15 @@ public class Main extends ApplicationAdapter {
         // TODO: Call player.renderFocusIndicator(gameHUD.getShapeRenderer())
         gameHUD.renderBackground();
         playerObject.renderFocusIndicator(gameHUD.getShapeRenderer());
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void dispose() {
         if (batch != null) {
             batch.dispose();
         }
         AssetManager.getInstance().dispose();
-    }
+    }*/
 
     public <T extends GameObject> void updateAndClean(List<T> list, float delta, float screenWidth, float screenHeight) {
         // 1. Get an Iterator<T> from the given list.

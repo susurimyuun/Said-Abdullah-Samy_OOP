@@ -16,6 +16,7 @@ public class Fairy extends Enemy {
 
     public Fairy(String name, int hp){
         super(150,380,24,24, Color.PINK,name,hp,500L);
+        setShotHitboxSize(28f,28f);
         setShootingPattern(new FrontShot(150f,10));
         setMovementPattern(new LinearEntityMovement(0f,-40f));
 
@@ -23,6 +24,7 @@ public class Fairy extends Enemy {
     public Fairy(float x, float y, String name, int hp){
 
         super(x,y,24,24,Color.PINK,name,hp,500L);
+        setShotHitboxSize(28f,28f);
         setShootingPattern(new FrontShot(150f,10));
         setMovementPattern(new LinearEntityMovement(0f,-40f));
     }
@@ -32,6 +34,7 @@ public class Fairy extends Enemy {
         this.shootInterval = shootInterval;
         this.maxShots = maxShots;
         // TODO (2 points): Inject default strategies FrontShot and LinearEntityMovement
+        setShotHitboxSize(28f,28f);
         setShootingPattern(new FrontShot(150f,10));
         setMovementPattern(new LinearEntityMovement(0f,-40f));
     }
@@ -74,4 +77,7 @@ public class Fairy extends Enemy {
         // TODO: Print "Player touches fairy"
     }
 
+    public Object getShootingPattern() {
+        return shootingPattern;
+    }
 }
