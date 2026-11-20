@@ -5,6 +5,8 @@ package com.SaidAbdullahSamy.backend.service;
 import com.SaidAbdullahSamy.backend.model.Score;
 import com.SaidAbdullahSamy.backend.repository.ScoreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -57,7 +59,7 @@ public class ScoreService {
 
     public List<Score> getLeaderboard(Integer limit) {
         // TODO: Use scoreRepository to find the Top Scores and provide the appropriate parameter
-        return scoreRepository.findTopScores(limit);
+        return scoreRepository.findTopScores(PageRequest.of(0, limit));
     }
 
     public void deleteScore(UUID scoreId) {
